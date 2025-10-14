@@ -6,7 +6,7 @@ import (
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/joao-vitor-felix/cinemax/migrations"
+	m "github.com/joao-vitor-felix/cinemax/migrations"
 	"github.com/pressly/goose/v3"
 )
 
@@ -27,7 +27,7 @@ func RunMigrations(db *sql.DB, dir string) error {
 	if dir == "" {
 		dir = "../../migrations"
 	}
-	goose.SetBaseFS(migrations.FS)
+	goose.SetBaseFS(m.MigrationFS)
 	if err := goose.SetDialect("postgres"); err != nil {
 		panic(err)
 	}
