@@ -33,6 +33,6 @@ FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
 -- +goose Down
-DROP TYPE IF EXISTS user_gender;
+DROP TYPE IF EXISTS user_gender CASCADE;
 DROP FUNCTION IF EXISTS set_updated_at() CASCADE;
 DROP TABLE IF EXISTS users;
