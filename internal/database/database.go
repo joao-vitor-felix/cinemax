@@ -23,16 +23,14 @@ func OpenPool() *sql.DB {
 	return db
 }
 
-func RunMigrations(db *sql.DB, dir string) error {
-	if dir == "" {
-		dir = "../../migrations"
-	}
+func RunMigrations(db *sql.DB) error {
 	goose.SetBaseFS(m.MigrationFS)
 	if err := goose.SetDialect("postgres"); err != nil {
 		panic(err)
 	}
-	if err := goose.Up(db, dir); err != nil {
+	if err := goose.Up(db, "."); err != nil {
 		panic(err)
 	}
+	slog.Info("Migrations applied")
 	return nil
 }
