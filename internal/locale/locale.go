@@ -1,4 +1,4 @@
-package locales
+package locale
 
 import (
 	"encoding/json"

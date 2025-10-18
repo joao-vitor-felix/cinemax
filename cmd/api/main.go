@@ -7,8 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	httpAdpt "github.com/joao-vitor-felix/cinemax/internal/adapters/http"
+	httpPkg "github.com/joao-vitor-felix/cinemax/internal/adapters/http"
 	"github.com/joao-vitor-felix/cinemax/internal/database"
+	"github.com/joao-vitor-felix/cinemax/internal/factory"
 	"github.com/joho/godotenv"
 )
 
@@ -30,8 +31,9 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	// bundle := locales.NewBundle()
-	r := httpAdpt.SetupRoutes()
+	// container recebendo dependências e retornando controllers
+	container := factory.NewContainer(db)
+	r := httpPkg.SetupRoutes(container)
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
 		Handler:      r,
