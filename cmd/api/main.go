@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	httpPkg "github.com/joao-vitor-felix/cinemax/internal/adapters/http"
+	httpPkg "github.com/joao-vitor-felix/cinemax/internal/adapter/http"
 	"github.com/joao-vitor-felix/cinemax/internal/database"
 	"github.com/joao-vitor-felix/cinemax/internal/factory"
 	"github.com/joho/godotenv"
