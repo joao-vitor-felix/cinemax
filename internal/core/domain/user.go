@@ -32,6 +32,8 @@ type User struct {
 	DateOfBirth     string
 	Gender          Gender
 	ProfilePhotoURL string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func (u *User) IsAgeValid() bool {
