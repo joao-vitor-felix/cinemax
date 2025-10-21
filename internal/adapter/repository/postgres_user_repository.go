@@ -29,7 +29,17 @@ func (r *PostgresUserRepository) Create(user *domain.User) (*domain.User, error)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id
 	`
-	err := r.db.QueryRow(query, user.FirstName, user.LastName, user.Email, user.Phone, user.PasswordHash, user.DateOfBirth, user.Gender, user.ProfilePhotoURL).Scan(&user.ID)
+	err := r.db.QueryRow(
+		query,
+		user.FirstName,
+		user.LastName,
+		user.Email,
+		user.Phone,
+		user.PasswordHash,
+		user.DateOfBirth,
+		user.Gender,
+		user.ProfilePhotoURL,
+	).Scan(&user.ID)
 	if err != nil {
 		return nil, err
 	}
