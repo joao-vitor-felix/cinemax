@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"errors"
 	"time"
 )
 
@@ -31,7 +30,7 @@ type User struct {
 	PasswordHash    string
 	DateOfBirth     string
 	Gender          Gender
-	ProfilePhotoURL string
+	ProfilePhotoURL *string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
@@ -48,10 +47,10 @@ func (u *User) IsAgeValid() bool {
 
 func NewUser(user User) (*User, error) {
 	if !user.Gender.IsValid() {
-		return nil, errors.New("invalid gender value")
+		return nil, ErrInvalidGender
 	}
 	if !user.IsAgeValid() {
-		return nil, errors.New("user must be at least 13 years old")
+		return nil, ErrUserTooYoung
 	}
 	return &user, nil
 }
