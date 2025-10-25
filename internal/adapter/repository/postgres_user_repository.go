@@ -27,7 +27,7 @@ func (r *PostgresUserRepository) Create(user *domain.User) (*domain.User, error)
 			profile_photo_url
 		)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id
+		RETURNING id, created_at, updated_at
 	`
 	err := r.db.QueryRow(
 		query,
@@ -39,7 +39,11 @@ func (r *PostgresUserRepository) Create(user *domain.User) (*domain.User, error)
 		user.DateOfBirth,
 		user.Gender,
 		user.ProfilePhotoURL,
-	).Scan(&user.ID)
+	).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
 	if err != nil {
 		return nil, err
 	}
