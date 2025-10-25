@@ -47,10 +47,10 @@ func (u *User) IsAgeValid() bool {
 
 func NewUser(user User) (*User, error) {
 	if !user.Gender.IsValid() {
-		return nil, ErrInvalidGender
+		return nil, InvalidGenderError
 	}
 	if !user.IsAgeValid() {
-		return nil, ErrUserTooYoung
+		return nil, UserTooYoungError
 	}
 	return &user, nil
 }

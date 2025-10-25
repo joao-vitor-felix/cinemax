@@ -25,7 +25,21 @@ func NewAppError(code, message string, statusCode int) *AppError {
 	}
 }
 
+func ValidationError(error string) *AppError {
+	return &AppError{
+		Code:       "VALIDATION_ERROR",
+		Message:    error,
+		StatusCode: http.StatusBadRequest,
+	}
+}
+
 var (
+	InvalidBodyError = NewAppError(
+		"INVALID_REQUEST_BODY",
+		"the request body is invalid",
+		http.StatusBadRequest,
+	)
+
 	InternalServerError = NewAppError(
 		"INTERNAL_SERVER_ERROR",
 		"an internal server error occurred",
@@ -33,21 +47,21 @@ var (
 	)
 
 	// Thrown when email or phone is already in use
-	ErrContactInfoNotAvailable = NewAppError(
+	ContactInfoUnavailableError = NewAppError(
 		"CONTACT_DATA_UNAVAILABLE",
 		"email or phone already in use",
 		http.StatusConflict,
 	)
 
 	// Thrown when gender is invalid
-	ErrInvalidGender = NewAppError(
+	InvalidGenderError = NewAppError(
 		"INVALID_GENDER",
 		"invalid gender",
 		http.StatusBadRequest,
 	)
 
 	// Thrown when user is under 13 years old
-	ErrUserTooYoung = NewAppError(
+	UserTooYoungError = NewAppError(
 		"TOO_YOUNG",
 		"user must be at least 13 years old",
 		http.StatusBadRequest,
