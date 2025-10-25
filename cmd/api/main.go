@@ -31,7 +31,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	// container recebendo dependências e retornando controllers
 	container := factory.NewContainer(db)
 	r := httpPkg.SetupRoutes(container)
 	srv := &http.Server{

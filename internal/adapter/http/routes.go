@@ -39,7 +39,7 @@ func SetupRoutes(container *factory.Container) http.Handler {
 	// use it later on routes that should not be cached
 	// r.Use(middleware.NoCache)
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/sign-up", func(w http.ResponseWriter, r *http.Request) {})
+		r.Post("/sign-up", m.MakeHandler(container.UserController.Register))
 	})
 	return r
 }
