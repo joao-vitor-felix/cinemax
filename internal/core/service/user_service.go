@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/joao-vitor-felix/cinemax/internal/adapter/http/controller"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
@@ -18,7 +17,7 @@ func NewUserService(repo port.UserRepository, passwordHasher port.PasswordHasher
 	}
 }
 
-func (s *UserService) Register(input controller.RegisterUserRequest) (*domain.User, error) {
+func (s *UserService) Register(input port.RegisterUserInput) (*domain.User, error) {
 	user, err := domain.NewUser(domain.User{
 		FirstName:       input.FirstName,
 		LastName:        input.LastName,
@@ -36,7 +35,7 @@ func (s *UserService) Register(input controller.RegisterUserRequest) (*domain.Us
 		return nil, err
 	}
 	if !isAvailable {
-		return nil, domain.ErrContactInfoNotAvailable
+		return nil, domain.ContactInfoUnavailableError
 	}
 	passwordHash, err := s.passwordHasher.Hash([]byte(input.Password))
 	if err != nil {
