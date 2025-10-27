@@ -21,27 +21,32 @@ func NewUserController(service port.UserService) *UserController {
 
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
-func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (any, int, error) {
+func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (map[string]any, error) {
 	var body port.RegisterUserInput
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		return nil, 0, domain.InvalidBodyError
+		return nil, domain.InvalidBodyError
 	}
 
 	if err := validate.Struct(body); err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 		//FIXME: find a better way to display validation errors
-		return nil, 0, domain.ValidationError(validationErrors.Error())
+		return nil, domain.ValidationError(validationErrors.Error())
 	}
 
 	user, err := uc.service.Register(body)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	return NewResource(user, map[string]Link{
-		"self": {
-			Href:   fmt.Sprintf("/users/%s", user.ID),
-			Method: "GET",
-		},
-	}), http.StatusCreated, nil
+	return map[string]any{
+		"res": NewResource(
+			user,
+			map[string]Link{
+				"self": {
+					Href:   fmt.Sprintf("/users/%s", user.ID),
+					Method: "GET",
+				},
+			}),
+		"status": http.StatusCreated,
+	}, nil
 }

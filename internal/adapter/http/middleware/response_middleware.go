@@ -25,11 +25,11 @@ func WriteErrorResponse(w http.ResponseWriter, err *domain.AppError) {
 	w.Write(jsonBytes)
 }
 
-type AppHandler func(w http.ResponseWriter, r *http.Request) (any, int, error)
+type AppHandler func(w http.ResponseWriter, r *http.Request) (map[string]any, error)
 
 func MakeHandler(fn AppHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data, status, err := fn(w, r)
+		res, err := fn(w, r)
 
 		if err != nil {
 			var appErr *domain.AppError
@@ -44,9 +44,8 @@ func MakeHandler(fn AppHandler) http.HandlerFunc {
 			return
 		}
 
-		if status == 0 {
-			status = http.StatusOK
-		}
+		data := res["res"]
+		status := res["status"].(int)
 
 		if data == nil {
 			w.WriteHeader(status)
