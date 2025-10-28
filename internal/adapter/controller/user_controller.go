@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -33,18 +32,18 @@ func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (map[
 		return nil, domain.ValidationError(validationErrors.Error())
 	}
 
-	user, err := uc.service.Register(body)
+	_, err := uc.service.Register(body)
 	if err != nil {
 		return nil, err
 	}
 
 	return map[string]any{
-		"res": NewResource(
-			user,
+		"data": NewResource(
+			nil,
 			map[string]Link{
-				"self": {
-					Href:   fmt.Sprintf("/users/%s", user.ID),
-					Method: "GET",
+				"sign-in": {
+					Href:   "/auth/sign-in",
+					Method: "POST",
 				},
 			}),
 		"status": http.StatusCreated,
