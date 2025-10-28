@@ -44,7 +44,7 @@ func MakeHandler(fn AppHandler) http.HandlerFunc {
 			return
 		}
 
-		data := res["res"]
+		data := res["data"]
 		status := res["status"].(int)
 
 		if data == nil {
