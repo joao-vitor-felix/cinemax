@@ -1,6 +1,6 @@
 package port
 
 type PasswordHasher interface {
-	Hash(password []byte) ([]byte, error)
-	Compare(password, hash []byte) error
+	Hash(password string) (string, error)
+	Compare(password, hash string) error
 }

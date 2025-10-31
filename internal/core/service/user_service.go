@@ -37,11 +37,11 @@ func (s *UserService) Register(input port.RegisterUserInput) (*domain.User, erro
 	if !isAvailable {
 		return nil, domain.ContactInfoUnavailableError
 	}
-	passwordHash, err := s.passwordHasher.Hash([]byte(input.Password))
+	passwordHash, err := s.passwordHasher.Hash(input.Password)
 	if err != nil {
 		return nil, err
 	}
-	user.PasswordHash = string(passwordHash)
+	user.PasswordHash = passwordHash
 	s.repo.Create(user)
 	//TODO: send email
 	return user, nil

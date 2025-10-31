@@ -8,15 +8,16 @@ func NewPasswordHasher() *PasswordHasher {
 	return &PasswordHasher{}
 }
 
-func (h *PasswordHasher) Hash(password []byte) ([]byte, error) {
-	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+func (h *PasswordHasher) Hash(password string) (string, error) {
+	passwordBytes := []byte(password)
+	hash, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return hash, nil
+	return string(hash), nil
 }
 
-func (h *PasswordHasher) Compare(hash, password []byte) error {
-	err := bcrypt.CompareHashAndPassword(hash, password)
+func (h *PasswordHasher) Compare(hash, password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err
 }
