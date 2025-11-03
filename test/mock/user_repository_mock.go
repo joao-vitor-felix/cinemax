@@ -5,11 +5,11 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type MockUserRepository struct {
+type UserRepositoryMock struct {
 	mock.Mock
 }
 
-func (m *MockUserRepository) Create(user *domain.User) (*domain.User, error) {
+func (m *UserRepositoryMock) Create(user *domain.User) (*domain.User, error) {
 	args := m.Called(user)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -17,7 +17,7 @@ func (m *MockUserRepository) Create(user *domain.User) (*domain.User, error) {
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *MockUserRepository) IsContactInfoAvailable(email, phone string) (bool, error) {
+func (m *UserRepositoryMock) IsContactInfoAvailable(email, phone string) (bool, error) {
 	args := m.Called(email, phone)
 	return args.Bool(0), args.Error(1)
 }
