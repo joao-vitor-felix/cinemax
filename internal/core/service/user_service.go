@@ -42,7 +42,10 @@ func (s *UserService) Register(input port.RegisterUserInput) (*domain.User, erro
 		return nil, err
 	}
 	user.PasswordHash = passwordHash
-	s.repo.Create(user)
+	createdUser, err := s.repo.Create(user)
+	if err != nil {
+		return nil, err
+	}
 	//TODO: send email
-	return user, nil
+	return createdUser, nil
 }
