@@ -36,14 +36,13 @@ func setupSut() (*service.UserService, *m.UserRepositoryMock, *HasherMock) {
 
 func TestUserService(t *testing.T) {
 	input := port.RegisterUserInput{
-		FirstName:       "John",
-		LastName:        "Doe",
-		Email:           "john.doe@example.com",
-		Phone:           "+12125551234",
-		Password:        "password123",
-		DateOfBirth:     "1990-01-01",
-		Gender:          "male",
-		ProfilePhotoURL: nil,
+		FirstName:   "John",
+		LastName:    "Doe",
+		Email:       "john.doe@example.com",
+		Phone:       "+12125551234",
+		Password:    "password123",
+		DateOfBirth: "1990-01-01",
+		Gender:      "male",
 	}
 
 	t.Run("Register", func(t *testing.T) {
@@ -63,7 +62,7 @@ func TestUserService(t *testing.T) {
 				PasswordHash:    expectedHash,
 				DateOfBirth:     input.DateOfBirth,
 				Gender:          input.Gender,
-				ProfilePhotoURL: input.ProfilePhotoURL,
+				ProfilePhotoURL: nil,
 				CreatedAt:       time.Now(),
 				UpdatedAt:       time.Now(),
 			}, nil).Once()
@@ -77,7 +76,6 @@ func TestUserService(t *testing.T) {
 			require.Equal(t, input.Phone, user.Phone)
 			require.Equal(t, input.DateOfBirth, user.DateOfBirth)
 			require.Equal(t, input.Gender, user.Gender)
-			require.Equal(t, input.ProfilePhotoURL, user.ProfilePhotoURL)
 			require.Equal(t, expectedHash, user.PasswordHash)
 
 			repoMock.AssertExpectations(t)
