@@ -13,6 +13,20 @@ import (
 	"github.com/joho/godotenv"
 )
 
+//	@title			Cinemax API
+//	@version		1.0
+//	@description	This is the API documentation for the Cinemax application.
+
+//	@host		localhost:8080
+//	@BasePath	/
+
+//	@accept		json
+//	@produce	json
+
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Type "Bearer" followed by a space and JWT token.
 func main() {
 	err := godotenv.Load()
 	if err != nil {

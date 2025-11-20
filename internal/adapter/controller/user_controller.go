@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
+	_ "github.com/joao-vitor-felix/cinemax/internal/adapter/http/middleware"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
@@ -23,6 +24,17 @@ func NewUserController(service port.UserService) *UserController {
 // TODO: put it inside the struct
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
+// Register godoc
+// @Summary Register a user
+// @Description Register a new user with the provided information.
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param user body port.RegisterUserInput true "User registration data"
+// @Success 201 {object} Resource "User registered successfully"
+// @Failure 400 {object} middleware.ErrorResponse "Bad request"
+// @Failure 500 {object} middleware.ErrorResponse "Internal server error"
+// @Router /auth/sign-up [post]
 func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (map[string]any, error) {
 	var body port.RegisterUserInput
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {

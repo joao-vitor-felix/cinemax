@@ -26,3 +26,7 @@ tidy:
 test:
 	go test -v ./...
 
+.PHONY: docs
+docs:
+	swag init -g cmd/api/main.go -o ./docs
+

@@ -6,8 +6,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	_ "github.com/joao-vitor-felix/cinemax/docs"
 	m "github.com/joao-vitor-felix/cinemax/internal/adapter/http/middleware"
 	"github.com/joao-vitor-felix/cinemax/internal/factory"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 var defaultCors cors.Options = cors.Options{
@@ -34,6 +36,9 @@ func SetupRoutes(container *factory.Container) http.Handler {
 	r.Use(cors.Handler(defaultCors))
 	// use it later on routes that should not be cached
 	// r.Use(middleware.NoCache)
+	r.Get("/docs/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/docs/doc.json"),
+	))
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/sign-up", m.MakeHandler(container.UserController.Register))
 	})
