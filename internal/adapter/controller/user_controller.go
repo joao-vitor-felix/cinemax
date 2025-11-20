@@ -2,6 +2,8 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -18,18 +20,24 @@ func NewUserController(service port.UserService) *UserController {
 	return &UserController{service}
 }
 
+// TODO: put it inside the struct
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
 func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (map[string]any, error) {
 	var body port.RegisterUserInput
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		slog.Error("failed to decode request body", "error", err)
 		return nil, domain.InvalidBodyError
 	}
 
 	if err := validate.Struct(body); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		//FIXME: find a better way to display validation errors
-		return nil, domain.ValidationError(validationErrors.Error())
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			error := ve[0]
+			errorMsg := BuildValidationErrorMessage(error.Field(), error.Tag())
+			return nil, domain.ValidationError(errorMsg)
+		}
+		return nil, domain.InternalServerError
 	}
 
 	_, err := uc.service.Register(body)
