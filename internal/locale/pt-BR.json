@@ -1,4 +1,0 @@
-{
-  "hello": "Olá",
-	"welcome": "Bem-vindo, {{.Name}}!"
-}

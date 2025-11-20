@@ -8,7 +8,6 @@ import (
 	"github.com/go-chi/cors"
 	m "github.com/joao-vitor-felix/cinemax/internal/adapter/http/middleware"
 	"github.com/joao-vitor-felix/cinemax/internal/factory"
-	"github.com/joao-vitor-felix/cinemax/internal/locale"
 )
 
 var defaultCors cors.Options = cors.Options{
@@ -33,9 +32,6 @@ func SetupRoutes(container *factory.Container) http.Handler {
 	r.Use(middleware.Heartbeat("/"))
 	r.Use(middleware.AllowContentType("application/json"))
 	r.Use(cors.Handler(defaultCors))
-
-	bundle := locale.NewBundle()
-	r.Use(m.LocalizeMiddleware(bundle))
 	// use it later on routes that should not be cached
 	// r.Use(middleware.NoCache)
 	r.Route("/auth", func(r chi.Router) {
