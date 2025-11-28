@@ -1,0 +1,63 @@
+package unit
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/joao-vitor-felix/cinemax/internal/adapter/controller"
+	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
+	"github.com/joao-vitor-felix/cinemax/internal/core/port"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+type UserServiceMock struct {
+	mock.Mock
+}
+
+func (u *UserServiceMock) Register(input port.RegisterUserInput) (*domain.User, error) {
+	args := u.Called(input)
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func setupSut() (*controller.UserController, *UserServiceMock) {
+	serviceMock := new(UserServiceMock)
+	sut := controller.NewUserController(serviceMock)
+	return sut, serviceMock
+}
+
+func TestUserController(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Register", func(t *testing.T) {
+		t.Run("should register a new user successfully", func(t *testing.T) {
+			sut, service := setupSut()
+			input := port.RegisterUserInput{
+				FirstName:   "John",
+				LastName:    "Doe",
+				Email:       "john.doe@example.com",
+				Phone:       "+12125551234",
+				Password:    "password123",
+				DateOfBirth: "1990-01-01",
+				Gender:      "male",
+			}
+
+			service.On("Register", input).Return(&domain.User{}, nil).Once()
+
+			body, _ := json.Marshal(input)
+			r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader(body))
+			w := httptest.NewRecorder()
+
+			resp, err := sut.Register(w, r)
+
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusCreated, resp.Status)
+			assert.IsType(t, resp.Data, &controller.Resource{})
+			assert.Equal(t, nil, resp.Data.(*controller.Resource).Data)
+			service.AssertExpectations(t)
+		})
+	})
+}
