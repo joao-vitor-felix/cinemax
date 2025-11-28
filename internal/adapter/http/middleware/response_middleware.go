@@ -6,18 +6,14 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/joao-vitor-felix/cinemax/internal/adapter/controller"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
-
-type ErrorResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
 
 func WriteErrorResponse(w http.ResponseWriter, err *domain.AppError) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(err.StatusCode)
-	resp := ErrorResponse{
+	resp := controller.ErrorResponse{
 		Code:    err.Code,
 		Message: err.Message,
 	}
@@ -25,7 +21,7 @@ func WriteErrorResponse(w http.ResponseWriter, err *domain.AppError) {
 	w.Write(jsonBytes)
 }
 
-type AppHandler func(w http.ResponseWriter, r *http.Request) (map[string]any, error)
+type AppHandler func(w http.ResponseWriter, r *http.Request) (controller.Response, error)
 
 func MakeHandler(fn AppHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -44,8 +40,8 @@ func MakeHandler(fn AppHandler) http.HandlerFunc {
 			return
 		}
 
-		data := res["data"]
-		status := res["status"].(int)
+		data := res.Data
+		status := res.Status
 
 		if data == nil {
 			w.WriteHeader(status)
