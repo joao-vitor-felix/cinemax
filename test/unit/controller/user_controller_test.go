@@ -10,8 +10,8 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/adapter/controller"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 type UserServiceMock struct {
@@ -53,11 +53,22 @@ func TestUserController(t *testing.T) {
 
 			resp, err := sut.Register(w, r)
 
-			assert.NoError(t, err)
-			assert.Equal(t, http.StatusCreated, resp.Status)
-			assert.IsType(t, resp.Data, &controller.Resource{})
-			assert.Equal(t, nil, resp.Data.(*controller.Resource).Data)
+			require.NoError(t, err)
+			require.Equal(t, http.StatusCreated, resp.Status)
+			require.IsType(t, resp.Data, &controller.Resource{})
+			require.Equal(t, nil, resp.Data.(*controller.Resource).Data)
 			service.AssertExpectations(t)
+		})
+
+		t.Run("should throw InvalidBodyError when a invalid body is provided", func(t *testing.T) {
+			sut, _ := setupSut()
+			r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader([]byte("invalid json")))
+			w := httptest.NewRecorder()
+
+			_, err := sut.Register(w, r)
+
+			require.Error(t, err)
+			require.Equal(t, domain.InvalidBodyError, err)
 		})
 	})
 }

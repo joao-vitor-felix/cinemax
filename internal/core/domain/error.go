@@ -35,8 +35,8 @@ func ValidationError(error string) *AppError {
 
 var (
 	InvalidBodyError = NewAppError(
-		"INVALID_REQUEST_BODY",
-		"the request body is invalid",
+		"INVALID_BODY",
+		"the body is invalid",
 		http.StatusBadRequest,
 	)
 
