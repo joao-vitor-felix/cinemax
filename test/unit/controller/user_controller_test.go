@@ -1,8 +1,6 @@
 package unit
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +8,7 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/adapter/controller"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
+	"github.com/joao-vitor-felix/cinemax/test"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -32,6 +31,8 @@ func setupSut() (*controller.UserController, *UserServiceMock) {
 func TestUserController(t *testing.T) {
 	t.Parallel()
 
+	url := "/auth/sign-up"
+
 	t.Run("Register", func(t *testing.T) {
 		t.Run("should register a new user successfully", func(t *testing.T) {
 			sut, service := setupSut()
@@ -47,8 +48,7 @@ func TestUserController(t *testing.T) {
 
 			service.On("Register", input).Return(&domain.User{}, nil).Once()
 
-			body, _ := json.Marshal(input)
-			r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader(body))
+			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
 			resp, err := sut.Register(w, r)
@@ -62,7 +62,7 @@ func TestUserController(t *testing.T) {
 
 		t.Run("should throw InvalidBodyError when a invalid body is provided", func(t *testing.T) {
 			sut, _ := setupSut()
-			r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader([]byte("invalid json")))
+			r := test.MakeRequest(http.MethodPost, url, "invalid json")
 			w := httptest.NewRecorder()
 
 			_, err := sut.Register(w, r)
@@ -85,8 +85,7 @@ func TestUserController(t *testing.T) {
 
 			service.On("Register", input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
 
-			body, _ := json.Marshal(input)
-			r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader(body))
+			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
 			_, err := sut.Register(w, r)
@@ -274,8 +273,7 @@ func TestUserController(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				sut, _ := setupSut()
 
-				body, _ := json.Marshal(tc.body)
-				r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader(body))
+				r := test.MakeRequest(http.MethodPost, url, tc.body)
 				w := httptest.NewRecorder()
 
 				_, err := sut.Register(w, r)
