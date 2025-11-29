@@ -70,5 +70,30 @@ func TestUserController(t *testing.T) {
 			require.Error(t, err)
 			require.Equal(t, domain.InvalidBodyError, err)
 		})
+
+		t.Run("should return an error when service fails", func(t *testing.T) {
+			sut, service := setupSut()
+			input := port.RegisterUserInput{
+				FirstName:   "John",
+				LastName:    "Doe",
+				Email:       "john.doe@example.com",
+				Phone:       "+12125551234",
+				Password:    "password123",
+				DateOfBirth: "1990-01-01",
+				Gender:      "male",
+			}
+
+			service.On("Register", input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
+
+			body, _ := json.Marshal(input)
+			r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader(body))
+			w := httptest.NewRecorder()
+
+			_, err := sut.Register(w, r)
+
+			require.Error(t, err)
+			require.Equal(t, domain.ContactInfoUnavailableError, err)
+			service.AssertExpectations(t)
+		})
 	})
 }
