@@ -95,5 +95,197 @@ func TestUserController(t *testing.T) {
 			require.Equal(t, domain.ContactInfoUnavailableError, err)
 			service.AssertExpectations(t)
 		})
+
+		validationTests := []struct {
+			name string
+			body port.RegisterUserInput
+		}{
+			{
+				name: "missing first name",
+				body: port.RegisterUserInput{
+					FirstName:   "",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "first name too short",
+				body: port.RegisterUserInput{
+					FirstName:   "J",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "missing last name",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "last name too short",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "D",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "missing email",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "invalid email format",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "invalid-email",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "missing phone",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "invalid phone format (not e164)",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "missing password",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "password too short",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "pass",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "password too long",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "passwordtoolong123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "missing date of birth",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "invalid date of birth format",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "01-01-1990",
+					Gender:      "male",
+				},
+			},
+			{
+				name: "invalid gender",
+				body: port.RegisterUserInput{
+					FirstName:   "John",
+					LastName:    "Doe",
+					Email:       "john.doe@example.com",
+					Phone:       "+12125551234",
+					Password:    "password123",
+					DateOfBirth: "1990-01-01",
+					Gender:      "invalid",
+				},
+			},
+		}
+
+		for _, tc := range validationTests {
+			t.Run(tc.name, func(t *testing.T) {
+				sut, _ := setupSut()
+
+				body, _ := json.Marshal(tc.body)
+				r := httptest.NewRequest(http.MethodPost, "/auth/sign-up", bytes.NewReader(body))
+				w := httptest.NewRecorder()
+
+				_, err := sut.Register(w, r)
+
+				require.Error(t, err)
+				var appErr *domain.AppError
+				require.ErrorAs(t, err, &appErr)
+				require.Equal(t, http.StatusBadRequest, appErr.StatusCode)
+				require.Equal(t, "VALIDATION_ERROR", appErr.Code)
+			})
+		}
 	})
 }
