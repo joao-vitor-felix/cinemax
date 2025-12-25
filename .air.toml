@@ -3,7 +3,7 @@ testdata_dir = "testdata"
 tmp_dir = "bin"
 
 [build]
-  args_bin = []
+  args_bin = ["-migrate"]
   bin = "./bin/main"
   cmd = "go build -o ./bin/main cmd/api/main.go"
   delay = 1000
