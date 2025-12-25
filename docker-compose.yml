@@ -1,12 +1,12 @@
 services:
   db:
-    image: postgres:latest
+    image: postgres:18
     container_name: db
     restart: always
     ports:
       - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/18/data
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: password
