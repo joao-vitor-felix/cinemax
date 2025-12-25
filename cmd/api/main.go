@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -54,5 +55,6 @@ func main() {
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 	}
+	slog.Info("Server has started", "port", port)
 	log.Fatal(srv.ListenAndServe())
 }
