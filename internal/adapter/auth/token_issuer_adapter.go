@@ -22,13 +22,13 @@ func (ti *TokenIssuerAdapter[C]) Generate(claims C, expiresIn time.Duration) (st
 		return "", fmt.Errorf("token_issuer_adapter: failed to marshal claims: %w", err)
 	}
 
-	mapClaims := jwt.MapClaims{}
+	mapClaims := jwt.MapClaims{
+		"exp": time.Now().Add(expiresIn).Unix(),
+		"iat": time.Now().Unix(),
+	}
 	if err := json.Unmarshal(data, &mapClaims); err != nil {
 		return "", fmt.Errorf("token_issuer_adapter: failed to build map claims: %w", err)
 	}
-
-	mapClaims["exp"] = jwt.NewNumericDate(time.Now().Add(expiresIn))
-	mapClaims["iat"] = jwt.NewNumericDate(time.Now())
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
 	signed, err := token.SignedString([]byte(ti.secret))
