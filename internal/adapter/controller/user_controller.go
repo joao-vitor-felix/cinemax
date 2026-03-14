@@ -2,11 +2,8 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
 	"net/http"
-
-	"github.com/go-playground/validator/v10"
 
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
@@ -19,9 +16,6 @@ type UserController struct {
 func NewUserController(service port.UserService) *UserController {
 	return &UserController{service}
 }
-
-// TODO: put it inside the struct
-var validate = validator.New(validator.WithRequiredStructEnabled())
 
 // Register godoc
 // @Summary Register a user
@@ -41,14 +35,9 @@ func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (Resp
 		return Response{}, domain.InvalidBodyError
 	}
 
-	if err := validate.Struct(body); err != nil {
-		var ve validator.ValidationErrors
-		if errors.As(err, &ve) {
-			error := ve[0]
-			errorMsg := BuildValidationErrorMessage(error.Field(), error.Tag())
-			return Response{}, domain.ValidationError(errorMsg)
-		}
-		return Response{}, domain.InternalServerError
+	if err := ValidateStruct(body); err != nil {
+		slog.Error("validation error", "error", err)
+		return Response{}, err
 	}
 
 	_, err := uc.service.Register(body)
