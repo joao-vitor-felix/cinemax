@@ -8,5 +8,4 @@ type TokenIssuer interface {
 type AccessTokenPayload struct {
 	Id    string
 	Email string
-	Role  string
 }
