@@ -21,3 +21,19 @@ func (m *UserRepositoryMock) IsContactInfoAvailable(email, phone string) (bool, 
 	args := m.Called(email, phone)
 	return args.Bool(0), args.Error(1)
 }
+
+func (m *UserRepositoryMock) FindByEmail(email string) (*domain.User, error) {
+	args := m.Called(email)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *UserRepositoryMock) FindByID(id string) (*domain.User, error) {
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}

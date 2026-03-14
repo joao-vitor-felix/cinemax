@@ -7,6 +7,8 @@ import (
 type UserRepository interface {
 	Create(user *domain.User) (*domain.User, error)
 	IsContactInfoAvailable(email, phone string) (bool, error)
+	FindByEmail(email string) (*domain.User, error)
+	FindByID(id string) (*domain.User, error)
 }
 
 type RegisterUserInput struct {
@@ -21,4 +23,18 @@ type RegisterUserInput struct {
 
 type UserService interface {
 	Register(input RegisterUserInput) (*domain.User, error)
+}
+
+type SignInInput struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+type SignInOutput struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type SignInService interface {
+	Execute(input SignInInput) (*SignInOutput, error)
 }
