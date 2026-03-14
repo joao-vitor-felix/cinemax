@@ -9,27 +9,27 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type UserController struct {
-	service port.UserService
+type SignUpController struct {
+	service port.SignUpService
 }
 
-func NewUserController(service port.UserService) *UserController {
-	return &UserController{service}
+func NewSignUpController(service port.SignUpService) *SignUpController {
+	return &SignUpController{service}
 }
 
-// Register godoc
-// @Summary Register a user
+// Execute godoc
+// @Summary Sign up a user
 // @Description Register a new user with the provided information.
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param user body port.RegisterUserInput true "User registration data"
+// @Param user body port.SignUpInput true "User registration data"
 // @Success 201 {object} Resource "User registered successfully"
 // @Failure 400 {object} ErrorResponse "Bad request"
 // @Failure 500 {object} ErrorResponse "Internal server error"
 // @Router /auth/sign-up [post]
-func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (Response, error) {
-	var body port.RegisterUserInput
+func (c *SignUpController) Execute(w http.ResponseWriter, r *http.Request) (Response, error) {
+	var body port.SignUpInput
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		slog.Error("failed to decode request body", "error", err)
 		return Response{}, domain.InvalidBodyError
@@ -40,7 +40,7 @@ func (uc *UserController) Register(w http.ResponseWriter, r *http.Request) (Resp
 		return Response{}, err
 	}
 
-	_, err := uc.service.Register(body)
+	_, err := c.service.Execute(body)
 	if err != nil {
 		return Response{}, err
 	}

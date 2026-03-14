@@ -10,7 +10,7 @@ import (
 )
 
 type Container struct {
-	UserController         *controller.UserController
+	SignUpController       *controller.SignUpController
 	SignInController       *controller.SignInController
 	RefreshTokenController *controller.RefreshTokenController
 }
@@ -25,12 +25,12 @@ func NewContainer(db *sql.DB) *Container {
 	refreshTokenRepo := repository.NewPostgresRefreshTokenRepository(db)
 
 	// Services
-	userService := service.NewUserService(userRepo, passwordHasher)
+	signUpService := service.NewSignUpService(userRepo, passwordHasher)
 	signInService := service.NewSignInService(userRepo, passwordHasher, tokenIssuer, refreshTokenRepo)
 	refreshTokenService := service.NewRefreshTokenService(refreshTokenRepo, userRepo, tokenIssuer)
 
 	return &Container{
-		UserController:         controller.NewUserController(userService),
+		SignUpController:       controller.NewSignUpController(signUpService),
 		SignInController:       controller.NewSignInController(signInService),
 		RefreshTokenController: controller.NewRefreshTokenController(refreshTokenService),
 	}

@@ -17,26 +17,26 @@ type UserServiceMock struct {
 	mock.Mock
 }
 
-func (u *UserServiceMock) Register(input port.RegisterUserInput) (*domain.User, error) {
+func (u *UserServiceMock) Execute(input port.SignUpInput) (*domain.User, error) {
 	args := u.Called(input)
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func setupSut() (*controller.UserController, *UserServiceMock) {
+func setupSut() (*controller.SignUpController, *UserServiceMock) {
 	serviceMock := new(UserServiceMock)
-	sut := controller.NewUserController(serviceMock)
+	sut := controller.NewSignUpController(serviceMock)
 	return sut, serviceMock
 }
 
-func TestUserController(t *testing.T) {
+func TestSignUpController(t *testing.T) {
 	t.Parallel()
 
 	url := "/auth/sign-up"
 
-	t.Run("Register", func(t *testing.T) {
+	t.Run("Execute", func(t *testing.T) {
 		t.Run("should register a new user successfully", func(t *testing.T) {
 			sut, service := setupSut()
-			input := port.RegisterUserInput{
+			input := port.SignUpInput{
 				FirstName:   "John",
 				LastName:    "Doe",
 				Email:       "john.doe@example.com",
@@ -46,12 +46,12 @@ func TestUserController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Register", input).Return(&domain.User{}, nil).Once()
+			service.On("Execute", input).Return(&domain.User{}, nil).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			resp, err := sut.Register(w, r)
+			resp, err := sut.Execute(w, r)
 
 			require.NoError(t, err)
 			require.Equal(t, http.StatusCreated, resp.Status)
@@ -65,7 +65,7 @@ func TestUserController(t *testing.T) {
 			r := test.MakeRequest(http.MethodPost, url, "invalid json")
 			w := httptest.NewRecorder()
 
-			_, err := sut.Register(w, r)
+			_, err := sut.Execute(w, r)
 
 			require.Error(t, err)
 			require.Equal(t, domain.InvalidBodyError, err)
@@ -73,7 +73,7 @@ func TestUserController(t *testing.T) {
 
 		t.Run("should return an error when service fails", func(t *testing.T) {
 			sut, service := setupSut()
-			input := port.RegisterUserInput{
+			input := port.SignUpInput{
 				FirstName:   "John",
 				LastName:    "Doe",
 				Email:       "john.doe@example.com",
@@ -83,12 +83,12 @@ func TestUserController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Register", input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
+			service.On("Execute", input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			_, err := sut.Register(w, r)
+			_, err := sut.Execute(w, r)
 
 			require.Error(t, err)
 			require.Equal(t, domain.ContactInfoUnavailableError, err)
@@ -97,11 +97,11 @@ func TestUserController(t *testing.T) {
 
 		validationTests := []struct {
 			name string
-			body port.RegisterUserInput
+			body port.SignUpInput
 		}{
 			{
 				name: "missing first name",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -113,7 +113,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "first name too short",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "J",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -125,7 +125,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "missing last name",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "",
 					Email:       "john.doe@example.com",
@@ -137,7 +137,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "last name too short",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "D",
 					Email:       "john.doe@example.com",
@@ -149,7 +149,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "missing email",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "",
@@ -161,7 +161,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "invalid email format",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "invalid-email",
@@ -173,7 +173,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "missing phone",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -185,7 +185,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "invalid phone format (not e164)",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -197,7 +197,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "missing password",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -209,7 +209,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "password too short",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -221,7 +221,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "password too long",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -233,7 +233,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "missing date of birth",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -245,7 +245,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "invalid date of birth format",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -257,7 +257,7 @@ func TestUserController(t *testing.T) {
 			},
 			{
 				name: "invalid gender",
-				body: port.RegisterUserInput{
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -276,7 +276,7 @@ func TestUserController(t *testing.T) {
 				r := test.MakeRequest(http.MethodPost, url, tc.body)
 				w := httptest.NewRecorder()
 
-				_, err := sut.Register(w, r)
+				_, err := sut.Execute(w, r)
 
 				require.Error(t, err)
 				var appErr *domain.AppError

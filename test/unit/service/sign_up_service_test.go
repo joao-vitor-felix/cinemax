@@ -28,15 +28,15 @@ func (h *HasherMock) Compare(hash, password string) error {
 	return args.Error(0)
 }
 
-func setupSut() (*service.UserService, *m.UserRepositoryMock, *HasherMock) {
+func setupSut() (port.SignUpService, *m.UserRepositoryMock, *HasherMock) {
 	repoMock := new(m.UserRepositoryMock)
 	hasherMock := new(HasherMock)
-	sut := service.NewUserService(repoMock, hasherMock)
+	sut := service.NewSignUpService(repoMock, hasherMock)
 	return sut, repoMock, hasherMock
 }
 
-func TestUserService(t *testing.T) {
-	input := port.RegisterUserInput{
+func TestSignUpService(t *testing.T) {
+	input := port.SignUpInput{
 		FirstName:   "John",
 		LastName:    "Doe",
 		Email:       "john.doe@example.com",
@@ -46,7 +46,7 @@ func TestUserService(t *testing.T) {
 		Gender:      "male",
 	}
 
-	t.Run("Register", func(t *testing.T) {
+	t.Run("Execute", func(t *testing.T) {
 		t.Parallel()
 		t.Run("should register a new user successfully", func(t *testing.T) {
 			sut, repoMock, hasherMock := setupSut()
@@ -68,7 +68,7 @@ func TestUserService(t *testing.T) {
 				UpdatedAt:       time.Now(),
 			}, nil).Once()
 
-			user, err := sut.Register(input)
+			user, err := sut.Execute(input)
 
 			require.NoError(t, err)
 			require.Equal(t, input.FirstName, user.FirstName)
@@ -88,7 +88,7 @@ func TestUserService(t *testing.T) {
 			invalidInput := input
 			invalidInput.Gender = "invalid_gender"
 
-			_, err := sut.Register(invalidInput)
+			_, err := sut.Execute(invalidInput)
 
 			require.Error(t, err)
 			var appErr *domain.AppError
@@ -98,7 +98,7 @@ func TestUserService(t *testing.T) {
 		t.Run("should return ContactInfoUnavailableError when contact data is already taken", func(t *testing.T) {
 			sut, repoMock, _ := setupSut()
 			repoMock.On("IsContactInfoAvailable", input.Email, input.Phone).Return(false, nil).Once()
-			_, err := sut.Register(input)
+			_, err := sut.Execute(input)
 
 			require.Error(t, err)
 			appErr, ok := err.(*domain.AppError)
@@ -115,7 +115,7 @@ func TestUserService(t *testing.T) {
 			expectedErr := errors.New("database connection failed")
 			repoMock.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, expectedErr).Once()
 
-			_, err := sut.Register(input)
+			_, err := sut.Execute(input)
 
 			require.Error(t, err)
 			require.Equal(t, expectedErr, err)
@@ -129,7 +129,7 @@ func TestUserService(t *testing.T) {
 			mockRepo.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, nil).Once()
 			hasherMock.On("Hash", input.Password).Return("", expectedErr).Once()
 
-			_, err := sut.Register(input)
+			_, err := sut.Execute(input)
 
 			require.Error(t, err)
 			require.Equal(t, expectedErr, err)
@@ -146,7 +146,7 @@ func TestUserService(t *testing.T) {
 			hasherMock.On("Hash", input.Password).Return(expectedHash, nil).Once()
 			mockRepo.On("Create", mock.AnythingOfType("*domain.User")).Return(nil, expectedErr).Once()
 
-			_, err := sut.Register(input)
+			_, err := sut.Execute(input)
 
 			require.Error(t, err)
 			require.Equal(t, expectedErr, err)

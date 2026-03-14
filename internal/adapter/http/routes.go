@@ -40,7 +40,7 @@ func SetupRoutes(container *factory.Container) http.Handler {
 		httpSwagger.URL("http://localhost:8080/docs/doc.json"),
 	))
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/sign-up", m.MakeHandler(container.UserController.Register))
+		r.Post("/sign-up", m.MakeHandler(container.SignUpController.Execute))
 		r.Post("/sign-in", m.MakeHandler(container.SignInController.Execute))
 		r.Post("/refresh-token", m.MakeHandler(container.RefreshTokenController.Execute))
 	})

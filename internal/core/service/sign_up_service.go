@@ -5,19 +5,19 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type UserService struct {
-	repo           port.UserRepository
+type SignUpService struct {
+	userRepo       port.UserRepository
 	passwordHasher port.PasswordHasher
 }
 
-func NewUserService(repo port.UserRepository, passwordHasher port.PasswordHasher) *UserService {
-	return &UserService{
-		repo,
+func NewSignUpService(userRepo port.UserRepository, passwordHasher port.PasswordHasher) port.SignUpService {
+	return &SignUpService{
+		userRepo,
 		passwordHasher,
 	}
 }
 
-func (s *UserService) Register(input port.RegisterUserInput) (*domain.User, error) {
+func (s *SignUpService) Execute(input port.SignUpInput) (*domain.User, error) {
 	user, err := domain.NewUser(
 		input.FirstName,
 		input.LastName,
@@ -29,7 +29,7 @@ func (s *UserService) Register(input port.RegisterUserInput) (*domain.User, erro
 	if err != nil {
 		return nil, err
 	}
-	isAvailable, err := s.repo.IsContactInfoAvailable(user.Email, user.Phone)
+	isAvailable, err := s.userRepo.IsContactInfoAvailable(user.Email, user.Phone)
 	if err != nil {
 		return nil, err
 	}
@@ -41,10 +41,9 @@ func (s *UserService) Register(input port.RegisterUserInput) (*domain.User, erro
 		return nil, err
 	}
 	user.PasswordHash = passwordHash
-	createdUser, err := s.repo.Create(user)
+	createdUser, err := s.userRepo.Create(user)
 	if err != nil {
 		return nil, err
 	}
-	//TODO: send email
 	return createdUser, nil
 }
