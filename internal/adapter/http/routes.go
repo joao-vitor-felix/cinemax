@@ -41,6 +41,7 @@ func SetupRoutes(container *factory.Container) http.Handler {
 	))
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/sign-up", m.MakeHandler(container.UserController.Register))
+		r.Post("/refresh-token", m.MakeHandler(container.RefreshTokenController.Handle))
 	})
 	return r
 }

@@ -1,6 +1,26 @@
 package controller
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
+)
+
+func ValidateStruct(input any) error {
+	validate := validator.New()
+	if err := validate.Struct(input); err != nil {
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			validationError := ve[0]
+			errorMsg := BuildValidationErrorMessage(validationError.Field(), validationError.Tag())
+			return domain.ValidationError(errorMsg)
+		}
+		return domain.InternalServerError
+	}
+	return nil
+}
 
 func BuildValidationErrorMessage(field, tag string) string {
 	switch tag {
