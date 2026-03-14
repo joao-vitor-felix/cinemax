@@ -28,6 +28,10 @@ func RunMigrations(db *sql.DB) error {
 	if err := goose.SetDialect("postgres"); err != nil {
 		panic(err)
 	}
+	tableName := os.Getenv("GOOSE_TABLE")
+	if tableName != "" {
+		goose.SetTableName(tableName)
+	}
 	if err := goose.Up(db, "."); err != nil {
 		panic(err)
 	}
