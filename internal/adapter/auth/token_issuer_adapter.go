@@ -2,21 +2,20 @@ package auth
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type TokenIssuerAdapter[C any] struct {
-	secret string
+type TokenIssuerAdapter struct{}
+
+func NewTokenIssuerAdapter() *TokenIssuerAdapter {
+	return &TokenIssuerAdapter{}
 }
 
-func NewTokenIssuerAdapter[C any](secret string) *TokenIssuerAdapter[C] {
-	return &TokenIssuerAdapter[C]{secret: secret}
-}
-
-func (ti *TokenIssuerAdapter[C]) Generate(claims port.AccessTokenPayload) (string, error) {
+func (ti TokenIssuerAdapter) Generate(claims port.AccessTokenPayload) (string, error) {
 	mapClaims := jwt.MapClaims{
 		"exp":   time.Now().Add(time.Hour).Unix(),
 		"iat":   time.Now().Unix(),
@@ -25,19 +24,19 @@ func (ti *TokenIssuerAdapter[C]) Generate(claims port.AccessTokenPayload) (strin
 		"role":  claims.Role,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
-	signed, err := token.SignedString([]byte(ti.secret))
+	signed, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return "", fmt.Errorf("token_issuer_adapter: failed to sign token: %w", err)
 	}
 	return signed, nil
 }
 
-func (ti *TokenIssuerAdapter[C]) Validate(tokenStr string) (*port.AccessTokenPayload, error) {
+func (ti TokenIssuerAdapter) Validate(tokenStr string) (*port.AccessTokenPayload, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("token_issuer_adapter: unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(ti.secret), nil
+		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
 	if err != nil || !token.Valid {
