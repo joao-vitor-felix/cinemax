@@ -11,42 +11,35 @@ func TestUserEntity(t *testing.T) {
 	t.Parallel()
 
 	t.Run("should return InvalidGenderError when gender is invalid", func(t *testing.T) {
-		_, err := domain.NewUser(domain.User{
-			Gender: "invalid",
-		})
+		_, err := domain.NewUser("John", "Doe", "john.doe@example.com", "+12125551234", "1990-01-01", "invalid")
 		require.Error(t, err)
 		require.Equal(t, domain.InvalidGenderError, err)
 	})
 
 	t.Run("should return UserTooYoungError when user is under 13 years old", func(t *testing.T) {
-		_, err := domain.NewUser(domain.User{
-			Gender:      "male",
-			DateOfBirth: "2015-01-01",
-		})
+		_, err := domain.NewUser("John", "Doe", "john.doe@example.com", "+12125551234", "2015-01-01", "male")
 
 		require.Error(t, err)
 		require.Equal(t, domain.UserTooYoungError, err)
 	})
 
 	t.Run("should return a user successfully", func(t *testing.T) {
-		input := domain.User{
-			FirstName:   "John",
-			LastName:    "Doe",
-			Email:       "john.doe@example.com",
-			Phone:       "+12125551234",
-			Gender:      domain.Male,
-			DateOfBirth: "1990-01-01",
-		}
+		firstName := "John"
+		lastName := "Doe"
+		email := "john.doe@example.com"
+		phone := "+12125551234"
+		gender := domain.Male
+		dateOfBirth := "1990-01-01"
 
-		user, err := domain.NewUser(input)
+		user, err := domain.NewUser(firstName, lastName, email, phone, dateOfBirth, gender)
 
 		require.NoError(t, err)
 		require.NotNil(t, user)
-		require.Equal(t, input.FirstName, user.FirstName)
-		require.Equal(t, input.LastName, user.LastName)
-		require.Equal(t, input.Email, user.Email)
-		require.Equal(t, input.Phone, user.Phone)
-		require.Equal(t, input.Gender, user.Gender)
-		require.Equal(t, input.DateOfBirth, user.DateOfBirth)
+		require.Equal(t, firstName, user.FirstName)
+		require.Equal(t, lastName, user.LastName)
+		require.Equal(t, email, user.Email)
+		require.Equal(t, phone, user.Phone)
+		require.Equal(t, gender, user.Gender)
+		require.Equal(t, dateOfBirth, user.DateOfBirth)
 	})
 }
