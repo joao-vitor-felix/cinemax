@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 	"github.com/joao-vitor-felix/cinemax/internal/core/service"
@@ -54,7 +55,7 @@ func TestUserService(t *testing.T) {
 			repoMock.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, nil)
 			hasherMock.On("Hash", input.Password).Return(expectedHash, nil)
 			repoMock.On("Create", mock.AnythingOfType("*domain.User")).Return(&domain.User{
-				ID:              "",
+				ID:              uuid.New(),
 				FirstName:       input.FirstName,
 				LastName:        input.LastName,
 				Email:           input.Email,
