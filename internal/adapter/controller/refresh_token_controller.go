@@ -17,7 +17,7 @@ func NewRefreshTokenController(service port.RefreshTokenService) *RefreshTokenCo
 	return &RefreshTokenController{service}
 }
 
-func (c *RefreshTokenController) Handle(w http.ResponseWriter, r *http.Request) (Response, error) {
+func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request) (Response, error) {
 	var input port.RefreshTokenInput
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		slog.Error("failed to decode request body", "error", err)
