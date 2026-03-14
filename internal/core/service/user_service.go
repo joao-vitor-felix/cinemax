@@ -18,14 +18,14 @@ func NewUserService(repo port.UserRepository, passwordHasher port.PasswordHasher
 }
 
 func (s *UserService) Register(input port.RegisterUserInput) (*domain.User, error) {
-	user, err := domain.NewUser(domain.User{
-		FirstName:   input.FirstName,
-		LastName:    input.LastName,
-		Email:       input.Email,
-		Phone:       input.Phone,
-		DateOfBirth: input.DateOfBirth,
-		Gender:      input.Gender,
-	})
+	user, err := domain.NewUser(
+		input.FirstName,
+		input.LastName,
+		input.Email,
+		input.Phone,
+		input.DateOfBirth,
+		input.Gender,
+	)
 	if err != nil {
 		return nil, err
 	}

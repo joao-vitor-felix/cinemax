@@ -2,6 +2,8 @@ package domain
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Gender string
@@ -22,7 +24,7 @@ func (g Gender) IsValid() bool {
 }
 
 type User struct {
-	ID              string
+	ID              uuid.UUID
 	FirstName       string
 	LastName        string
 	Email           string
@@ -45,12 +47,22 @@ func (u *User) IsAgeValid() bool {
 	return years >= 13
 }
 
-func NewUser(user User) (*User, error) {
+func NewUser(firstName, lastName, email, phone, dateOfBirth string, gender Gender) (*User, error) {
+	user := &User{
+		ID:          uuid.New(),
+		FirstName:   firstName,
+		LastName:    lastName,
+		Email:       email,
+		Phone:       phone,
+		DateOfBirth: dateOfBirth,
+		Gender:      gender,
+	}
+
 	if !user.Gender.IsValid() {
 		return nil, InvalidGenderError
 	}
 	if !user.IsAgeValid() {
 		return nil, UserTooYoungError
 	}
-	return &user, nil
+	return user, nil
 }
