@@ -17,6 +17,19 @@ func NewSignInController(service port.SignInService) *SignInController {
 	return &SignInController{service}
 }
 
+// Execute godoc
+//
+//	@Summary		Sign in a user
+//	@Description	Authenticate a user and return access and refresh tokens.
+//	@Tags			Auth
+//	@Accept			json
+//	@Produce		json
+//	@Param			credentials	body		port.SignInInput	true	"User credentials"
+//	@Success		200			{object}	port.SignInOutput	"User authenticated successfully"
+//	@Failure		400			{object}	ErrorResponse		"Bad request (invalid body or validation error)"
+//	@Failure		401			{object}	ErrorResponse		"Unauthorized (invalid credentials)"
+//	@Failure		500			{object}	ErrorResponse		"Internal server error"
+//	@Router			/auth/sign-in [post]
 func (c *SignInController) Execute(w http.ResponseWriter, r *http.Request) (Response, error) {
 	var body port.SignInInput
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
