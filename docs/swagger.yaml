@@ -2,6 +2,13 @@ basePath: /
 consumes:
 - application/json
 definitions:
+  controller.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   controller.Link:
     properties:
       href:
@@ -29,14 +36,24 @@ definitions:
     - Female
     - Other
     - PreferNotToSay
-  middleware.ErrorResponse:
+  port.SignInInput:
     properties:
-      code:
+      email:
         type: string
-      message:
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  port.SignInOutput:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
         type: string
     type: object
-  port.RegisterUserInput:
+  port.SignUpInput:
     properties:
       date_of_birth:
         type: string
@@ -77,6 +94,40 @@ info:
   title: Cinemax API
   version: "1.0"
 paths:
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return access and refresh tokens.
+      parameters:
+      - description: User credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/port.SignInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User authenticated successfully
+          schema:
+            $ref: '#/definitions/port.SignInOutput'
+        "400":
+          description: Bad request (invalid body or validation error)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized (invalid credentials)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Sign in a user
+      tags:
+      - Auth
   /auth/sign-up:
     post:
       consumes:
@@ -88,7 +139,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/port.RegisterUserInput'
+          $ref: '#/definitions/port.SignUpInput'
       produces:
       - application/json
       responses:
@@ -99,12 +150,12 @@ paths:
         "400":
           description: Bad request
           schema:
-            $ref: '#/definitions/middleware.ErrorResponse'
+            $ref: '#/definitions/controller.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/middleware.ErrorResponse'
-      summary: Register a user
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Sign up a user
       tags:
       - Auth
 produces:
