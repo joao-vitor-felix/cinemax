@@ -47,7 +47,6 @@ func TestSignUpService(t *testing.T) {
 	}
 
 	t.Run("Execute", func(t *testing.T) {
-		t.Parallel()
 		t.Run("should register a new user successfully", func(t *testing.T) {
 			sut, repoMock, hasherMock := setupSut()
 

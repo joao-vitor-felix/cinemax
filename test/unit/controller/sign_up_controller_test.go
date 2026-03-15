@@ -29,8 +29,6 @@ func setupSut() (*controller.SignUpController, *UserServiceMock) {
 }
 
 func TestSignUpController(t *testing.T) {
-	t.Parallel()
-
 	url := "/auth/sign-up"
 
 	t.Run("Execute", func(t *testing.T) {

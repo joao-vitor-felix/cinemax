@@ -8,8 +8,6 @@ import (
 )
 
 func TestUserEntity(t *testing.T) {
-	t.Parallel()
-
 	t.Run("should return InvalidGenderError when gender is invalid", func(t *testing.T) {
 		_, err := domain.NewUser("John", "Doe", "john.doe@example.com", "+12125551234", "1990-01-01", "invalid")
 		require.Error(t, err)
