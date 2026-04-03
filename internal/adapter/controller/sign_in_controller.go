@@ -48,7 +48,15 @@ func (c *SignInController) Execute(w http.ResponseWriter, r *http.Request) (Resp
 	}
 
 	return Response{
-		Data:   output,
+		Data: NewResource(
+			output,
+			map[string]Link{
+				"refresh-token": {
+					Href:   "/auth/refresh-token",
+					Method: "POST",
+				},
+			},
+		),
 		Status: http.StatusOK,
 	}, nil
 }
