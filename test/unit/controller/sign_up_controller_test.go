@@ -179,7 +179,7 @@ func TestSignUpController(t *testing.T) {
 			},
 			{
 				name:          "invalid phone format (not e164)",
-				expectedError: "(?i)e164",
+				expectedError: "(?i)must be a valid",
 				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
@@ -244,7 +244,7 @@ func TestSignUpController(t *testing.T) {
 			},
 			{
 				name:          "invalid date of birth format",
-				expectedError: "(?i)datetime|date|format",
+				expectedError: "(?i)must be a valid date",
 				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
@@ -257,7 +257,7 @@ func TestSignUpController(t *testing.T) {
 			},
 			{
 				name:          "invalid gender",
-				expectedError: "(?i)oneof",
+				expectedError: "(?i)contains an invalid value",
 				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
