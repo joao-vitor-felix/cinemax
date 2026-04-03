@@ -1,4 +1,4 @@
-package unit
+package service_test
 
 import (
 	"errors"
@@ -53,7 +53,16 @@ func TestSignUpService(t *testing.T) {
 			expectedHash := "hashed_password_123"
 			repoMock.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, nil)
 			hasherMock.On("Hash", input.Password).Return(expectedHash, nil)
-			repoMock.On("Create", mock.AnythingOfType("*domain.User")).Return(&domain.User{
+			repoMock.On("Create", mock.AnythingOfType("*domain.User")).Run(func(args mock.Arguments) {
+				arg := args.Get(0).(*domain.User)
+				require.Equal(t, input.FirstName, arg.FirstName)
+				require.Equal(t, input.LastName, arg.LastName)
+				require.Equal(t, input.Email, arg.Email)
+				require.Equal(t, input.Phone, arg.Phone)
+				require.Equal(t, input.DateOfBirth, arg.DateOfBirth)
+				require.Equal(t, input.Gender, arg.Gender)
+				require.Equal(t, expectedHash, arg.PasswordHash)
+			}).Return(&domain.User{
 				ID:              uuid.New(),
 				FirstName:       input.FirstName,
 				LastName:        input.LastName,
@@ -70,6 +79,7 @@ func TestSignUpService(t *testing.T) {
 			user, err := sut.Execute(input)
 
 			require.NoError(t, err)
+			require.NotZero(t, user.ID)
 			require.Equal(t, input.FirstName, user.FirstName)
 			require.Equal(t, input.LastName, user.LastName)
 			require.Equal(t, input.Email, user.Email)
@@ -82,7 +92,7 @@ func TestSignUpService(t *testing.T) {
 			hasherMock.AssertExpectations(t)
 		})
 
-		t.Run("should return AppError when user validation fails", func(t *testing.T) {
+		t.Run("should return an error when user instantiation fails", func(t *testing.T) {
 			sut, _, _ := setupSut()
 			invalidInput := input
 			invalidInput.Gender = "invalid_gender"
