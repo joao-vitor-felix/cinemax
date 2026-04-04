@@ -62,7 +62,7 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 		return nil, err
 	}
 
-	newRefreshToken, err := s.refreshTokenRepo.GenerateAndDeleteUsedToken(refreshToken.Token, user.ID.String())
+	newRefreshToken, err := s.refreshTokenRepo.GenerateAndInvalidateUsedToken(refreshToken.Token, user.ID.String())
 	if err != nil {
 		return nil, err
 	}

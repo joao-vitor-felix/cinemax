@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -87,20 +88,22 @@ func (r *PostgresRefreshTokenRepository) GenerateToken(userId string) (*domain.R
 	return &t, nil
 }
 
-func (r *PostgresRefreshTokenRepository) GenerateAndDeleteUsedToken(token, userId string) (*domain.RefreshToken, error) {
+func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(token, userId string) (*domain.RefreshToken, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer func() {
-		if err := tx.Rollback(); err != nil && err.Error() != "sql: transaction has already been committed or rolled back" {
+		if err := tx.Rollback(); err != nil && errors.Is(err, sql.ErrTxDone) {
 			slog.Error("failed to rollback transaction", "error", err)
 		}
 	}()
 
 	updateQuery := `
-		DELETE FROM
+		UPDATE
 			refresh_tokens
+		SET
+			used_at = CURRENT_TIMESTAMP
 		WHERE
 			token = $1
 		AND

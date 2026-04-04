@@ -5,7 +5,7 @@ import "github.com/joao-vitor-felix/cinemax/internal/core/domain"
 type RefreshTokenRepository interface {
 	GetByToken(token string) (*domain.RefreshToken, error)
 	GenerateToken(userId string) (*domain.RefreshToken, error)
-	GenerateAndDeleteUsedToken(token, userId string) (*domain.RefreshToken, error)
+	GenerateAndInvalidateUsedToken(token, userId string) (*domain.RefreshToken, error)
 	DeleteToken(token string) error
 	DeleteTokensByUserID(userId string) error
 }
