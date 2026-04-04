@@ -25,7 +25,7 @@ func NewSignUpController(service port.SignUpService) *SignUpController {
 //	@Accept			json
 //	@Produce		json
 //	@Param			user	body		port.SignUpInput	true	"User registration data"
-//	@Success		201		{object}	Resource			"User registered successfully"
+//	@Success		201		{object}	Resource[any]			"User registered successfully"
 //	@Failure		400		{object}	ErrorResponse		"Bad request"
 //	@Failure		500		{object}	ErrorResponse		"Internal server error"
 //	@Router			/auth/sign-up [post]
@@ -47,7 +47,7 @@ func (c *SignUpController) Execute(w http.ResponseWriter, r *http.Request) (Resp
 	}
 
 	return Response{
-		Data: NewResource(
+		Data: NewResource[any](
 			nil,
 			map[string]Link{
 				"sign-in": {

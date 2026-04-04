@@ -54,7 +54,7 @@ func TestSignInController(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, http.StatusOK, res.Status)
-			require.Equal(t, output, res.Data.(*controller.Resource).Data)
+			require.Equal(t, output, res.Data.(*controller.Resource[*port.SignInOutput]).Data)
 
 			service.AssertExpectations(t)
 		})

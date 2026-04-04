@@ -5,8 +5,8 @@ type Link struct {
 	Method string `json:"method,omitempty"`
 }
 
-type Resource struct {
-	Data  any             `json:"data"`
+type Resource[T any] struct {
+	Data  T               `json:"data"`
 	Links map[string]Link `json:"links,omitempty"`
 }
 
@@ -19,21 +19,21 @@ type Pagination struct {
 	HasNext     bool `json:"hasNext"`
 }
 
-type ResourceCollection struct {
-	Data       []any       `json:"data"`
+type ResourceCollection[T any] struct {
+	Data       []T         `json:"data"`
 	Pagination *Pagination `json:"pagination,omitempty"`
 	Links      []Link      `json:"links,omitempty"`
 }
 
-func NewResource(data any, links map[string]Link) *Resource {
-	return &Resource{
+func NewResource[T any](data T, links map[string]Link) *Resource[T] {
+	return &Resource[T]{
 		Data:  data,
 		Links: links,
 	}
 }
 
-func NewResourceCollection(data []any, pagination *Pagination, links ...Link) *ResourceCollection {
-	return &ResourceCollection{
+func NewResourceCollection[T any](data []T, pagination *Pagination, links ...Link) *ResourceCollection[T] {
+	return &ResourceCollection[T]{
 		Data:       data,
 		Pagination: pagination,
 		Links:      links,

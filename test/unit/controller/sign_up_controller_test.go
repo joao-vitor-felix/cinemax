@@ -53,7 +53,7 @@ func TestSignUpController(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, http.StatusCreated, res.Status)
-			require.Equal(t, nil, res.Data.(*controller.Resource).Data)
+			require.Equal(t, nil, res.Data.(*controller.Resource[any]).Data)
 			service.AssertExpectations(t)
 		})
 

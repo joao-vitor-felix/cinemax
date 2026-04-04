@@ -110,7 +110,7 @@ func TestSignInService(t *testing.T) {
 		t.Run("should return error when user is not found", func(t *testing.T) {
 			sut, userRepo, hasher, tokenIssuer, refreshTokenRepo := setupSignInSut()
 
-			userRepo.On("FindByEmail", input.Email).Return(nil, errors.New("not found")).Once()
+			userRepo.On("FindByEmail", input.Email).Return(nil, nil).Once()
 
 			output, err := sut.Execute(input)
 

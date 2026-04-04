@@ -33,6 +33,7 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
+                "summary": "Refresh access token",
                 "parameters": [
                     {
                         "description": "Refresh token",
@@ -106,7 +107,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User authenticated successfully",
                         "schema": {
-                            "$ref": "#/definitions/port.SignInOutput"
+                            "$ref": "#/definitions/controller.Resource-port_SignInOutput"
                         }
                     },
                     "400": {
@@ -158,7 +159,7 @@ const docTemplate = `{
                     "201": {
                         "description": "User registered successfully",
                         "schema": {
-                            "$ref": "#/definitions/controller.Resource"
+                            "$ref": "#/definitions/controller.Resource-any"
                         }
                     },
                     "400": {
@@ -200,10 +201,24 @@ const docTemplate = `{
                 }
             }
         },
-        "controller.Resource": {
+        "controller.Resource-any": {
             "type": "object",
             "properties": {
                 "data": {},
+                "links": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/controller.Link"
+                    }
+                }
+            }
+        },
+        "controller.Resource-port_SignInOutput": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/port.SignInOutput"
+                },
                 "links": {
                     "type": "object",
                     "additionalProperties": {

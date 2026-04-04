@@ -25,7 +25,7 @@ func NewSignInController(service port.SignInService) *SignInController {
 //	@Accept			json
 //	@Produce		json
 //	@Param			credentials	body		port.SignInInput	true	"User credentials"
-//	@Success		200			{object}	port.SignInOutput	"User authenticated successfully"
+//	@Success		200			{object}	Resource[port.SignInOutput]	"User authenticated successfully"
 //	@Failure		400			{object}	ErrorResponse		"Bad request (invalid body or validation error)"
 //	@Failure		401			{object}	ErrorResponse		"Unauthorized (invalid credentials)"
 //	@Failure		500			{object}	ErrorResponse		"Internal server error"

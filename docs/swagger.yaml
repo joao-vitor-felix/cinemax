@@ -16,9 +16,18 @@ definitions:
       method:
         type: string
     type: object
-  controller.Resource:
+  controller.Resource-any:
     properties:
       data: {}
+      links:
+        additionalProperties:
+          $ref: '#/definitions/controller.Link'
+        type: object
+    type: object
+  controller.Resource-port_SignInOutput:
+    properties:
+      data:
+        $ref: '#/definitions/port.SignInOutput'
       links:
         additionalProperties:
           $ref: '#/definitions/controller.Link'
@@ -145,6 +154,7 @@ paths:
           description: Internal server error
           schema:
             $ref: '#/definitions/controller.ErrorResponse'
+      summary: Refresh access token
       tags:
       - Auth
   /auth/sign-in:
@@ -165,7 +175,7 @@ paths:
         "200":
           description: User authenticated successfully
           schema:
-            $ref: '#/definitions/port.SignInOutput'
+            $ref: '#/definitions/controller.Resource-port_SignInOutput'
         "400":
           description: Bad request (invalid body or validation error)
           schema:
@@ -199,7 +209,7 @@ paths:
         "201":
           description: User registered successfully
           schema:
-            $ref: '#/definitions/controller.Resource'
+            $ref: '#/definitions/controller.Resource-any'
         "400":
           description: Bad request
           schema:
