@@ -30,7 +30,7 @@ func (s *SignInService) Execute(input port.SignInInput) (*port.SignInOutput, err
 	user, err := s.userRepo.FindByEmail(input.Email)
 
 	if err != nil {
-		return nil, domain.InvalidCredentialsError
+		return nil, err
 	}
 
 	if user == nil {
