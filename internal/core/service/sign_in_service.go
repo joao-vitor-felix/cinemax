@@ -28,7 +28,12 @@ func NewSignInService(
 
 func (s *SignInService) Execute(input port.SignInInput) (*port.SignInOutput, error) {
 	user, err := s.userRepo.FindByEmail(input.Email)
+
 	if err != nil {
+		return nil, domain.InvalidCredentialsError
+	}
+
+	if user == nil {
 		return nil, domain.InvalidCredentialsError
 	}
 
