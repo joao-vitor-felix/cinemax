@@ -55,7 +55,7 @@ func TestRefreshTokenController(t *testing.T) {
 
 			require.NoError(t, err)
 			require.Equal(t, http.StatusOK, res.Status)
-			require.Equal(t, output, res.Data.(*port.RefreshTokenOutput))
+			require.Equal(t, output, res.Data.(*controller.Resource[*port.RefreshTokenOutput]).Data)
 
 			service.AssertExpectations(t)
 		})

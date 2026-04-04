@@ -49,7 +49,10 @@ func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request)
 	}
 
 	return Response{
-		Data:   output,
+		Data: NewResource(
+			output,
+			nil,
+		),
 		Status: http.StatusOK,
 	}, nil
 }
