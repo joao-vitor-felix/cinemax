@@ -25,8 +25,13 @@ func NewRefreshTokenService(
 
 func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
 	refreshToken, err := s.refreshTokenRepo.GetByToken(input.RefreshToken)
-	if err != nil {
+
+	if refreshToken == nil {
 		return nil, domain.NotFoundError("token")
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	if refreshToken.IsUsed() {
@@ -39,8 +44,13 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 	}
 
 	user, err := s.userRepo.FindByID(refreshToken.UserId)
-	if err != nil {
+
+	if user == nil {
 		return nil, domain.NotFoundError("user")
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{

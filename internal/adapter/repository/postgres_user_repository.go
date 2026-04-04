@@ -97,6 +97,11 @@ func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error)
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}

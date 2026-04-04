@@ -40,6 +40,10 @@ func (r *PostgresRefreshTokenRepository) GetByToken(token string) (*domain.Refre
 		&t.CreatedAt,
 	)
 
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
