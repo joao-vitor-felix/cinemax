@@ -15,6 +15,63 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/auth/refresh-token": {
+            "post": {
+                "description": "Refresh the access token using a valid refresh token.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "refreshToken",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/port.RefreshTokenInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Access token refreshed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/port.RefreshTokenOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (invalid body or validation error)",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (invalid refresh token)",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found (token or user not found)",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-in": {
             "post": {
                 "description": "Authenticate a user and return access and refresh tokens.",
@@ -164,6 +221,28 @@
                 "PreferNotToSay"
             ]
         },
+        "port.RefreshTokenInput": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "port.RefreshTokenOutput": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
         "port.SignInInput": {
             "type": "object",
             "required": [
@@ -175,7 +254,9 @@
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 12,
+                    "minLength": 8
                 }
             }
         },

@@ -36,11 +36,27 @@ definitions:
     - Female
     - Other
     - PreferNotToSay
+  port.RefreshTokenInput:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  port.RefreshTokenOutput:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
   port.SignInInput:
     properties:
       email:
         type: string
       password:
+        maxLength: 12
+        minLength: 8
         type: string
     required:
     - email
@@ -94,6 +110,43 @@ info:
   title: Cinemax API
   version: "1.0"
 paths:
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refresh the access token using a valid refresh token.
+      parameters:
+      - description: Refresh token
+        in: body
+        name: refreshToken
+        required: true
+        schema:
+          $ref: '#/definitions/port.RefreshTokenInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token refreshed successfully
+          schema:
+            $ref: '#/definitions/port.RefreshTokenOutput'
+        "400":
+          description: Bad request (invalid body or validation error)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized (invalid refresh token)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Not found (token or user not found)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      tags:
+      - Auth
   /auth/sign-in:
     post:
       consumes:
