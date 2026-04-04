@@ -65,3 +65,88 @@ func (r *PostgresUserRepository) IsContactInfoAvailable(email, phone string) (bo
 	}
 	return !exists, nil
 }
+
+func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error) {
+	query := `
+		SELECT
+			id,
+			first_name,
+			last_name,
+			email,
+			phone,
+			password_hash,
+			date_of_birth,
+			gender,
+			profile_photo_url,
+			created_at,
+			updated_at
+		FROM users
+		WHERE email = $1
+	`
+	var user domain.User
+	err := r.db.QueryRow(query, email).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Phone,
+		&user.PasswordHash,
+		&user.DateOfBirth,
+		&user.Gender,
+		&user.ProfilePhotoURL,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *PostgresUserRepository) FindByID(id string) (*domain.User, error) {
+	query := `
+		SELECT
+			id,
+			first_name,
+			last_name,
+			email,
+			phone,
+			password_hash,
+			date_of_birth,
+			gender,
+			profile_photo_url,
+			created_at,
+			updated_at
+		FROM users
+		WHERE id = $1
+	`
+	var user domain.User
+	err := r.db.QueryRow(query, id).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Phone,
+		&user.PasswordHash,
+		&user.DateOfBirth,
+		&user.Gender,
+		&user.ProfilePhotoURL,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

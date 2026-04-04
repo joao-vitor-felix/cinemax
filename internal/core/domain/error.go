@@ -33,6 +33,14 @@ func ValidationError(error string) *AppError {
 	}
 }
 
+func NotFoundError(entity string) *AppError {
+	return &AppError{
+		Code:       "NOT_FOUND",
+		Message:    entity + " not found",
+		StatusCode: http.StatusNotFound,
+	}
+}
+
 var (
 	InvalidBodyError = NewAppError(
 		"INVALID_BODY",
@@ -65,5 +73,11 @@ var (
 		"TOO_YOUNG",
 		"user must be at least 13 years old",
 		http.StatusBadRequest,
+	)
+
+	InvalidCredentialsError = NewAppError(
+		"INVALID_CREDENTIALS",
+		"invalid credentials",
+		http.StatusUnauthorized,
 	)
 )

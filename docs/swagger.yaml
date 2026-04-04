@@ -2,6 +2,13 @@ basePath: /
 consumes:
 - application/json
 definitions:
+  controller.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   controller.Link:
     properties:
       href:
@@ -9,9 +16,18 @@ definitions:
       method:
         type: string
     type: object
-  controller.Resource:
+  controller.Resource-any:
     properties:
       data: {}
+      links:
+        additionalProperties:
+          $ref: '#/definitions/controller.Link'
+        type: object
+    type: object
+  controller.Resource-port_SignInOutput:
+    properties:
+      data:
+        $ref: '#/definitions/port.SignInOutput'
       links:
         additionalProperties:
           $ref: '#/definitions/controller.Link'
@@ -29,14 +45,40 @@ definitions:
     - Female
     - Other
     - PreferNotToSay
-  middleware.ErrorResponse:
+  port.RefreshTokenInput:
     properties:
-      code:
+      refresh_token:
         type: string
-      message:
+    required:
+    - refresh_token
+    type: object
+  port.RefreshTokenOutput:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
         type: string
     type: object
-  port.RegisterUserInput:
+  port.SignInInput:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 12
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  port.SignInOutput:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  port.SignUpInput:
     properties:
       date_of_birth:
         type: string
@@ -77,6 +119,78 @@ info:
   title: Cinemax API
   version: "1.0"
 paths:
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refresh the access token using a valid refresh token.
+      parameters:
+      - description: Refresh token
+        in: body
+        name: refreshToken
+        required: true
+        schema:
+          $ref: '#/definitions/port.RefreshTokenInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token refreshed successfully
+          schema:
+            $ref: '#/definitions/port.RefreshTokenOutput'
+        "400":
+          description: Bad request (invalid body or validation error)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized (invalid refresh token)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Not found (token or user not found)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Refresh access token
+      tags:
+      - Auth
+  /auth/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return access and refresh tokens.
+      parameters:
+      - description: User credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/port.SignInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User authenticated successfully
+          schema:
+            $ref: '#/definitions/controller.Resource-port_SignInOutput'
+        "400":
+          description: Bad request (invalid body or validation error)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized (invalid credentials)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Sign in a user
+      tags:
+      - Auth
   /auth/sign-up:
     post:
       consumes:
@@ -88,23 +202,23 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/port.RegisterUserInput'
+          $ref: '#/definitions/port.SignUpInput'
       produces:
       - application/json
       responses:
         "201":
           description: User registered successfully
           schema:
-            $ref: '#/definitions/controller.Resource'
+            $ref: '#/definitions/controller.Resource-any'
         "400":
           description: Bad request
           schema:
-            $ref: '#/definitions/middleware.ErrorResponse'
+            $ref: '#/definitions/controller.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/middleware.ErrorResponse'
-      summary: Register a user
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Sign up a user
       tags:
       - Auth
 produces:

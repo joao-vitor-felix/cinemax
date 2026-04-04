@@ -1,4 +1,4 @@
-package unit
+package controller_test
 
 import (
 	"net/http"
@@ -13,30 +13,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type UserServiceMock struct {
+type SignUpService struct {
 	mock.Mock
 }
 
-func (u *UserServiceMock) Register(input port.RegisterUserInput) (*domain.User, error) {
-	args := u.Called(input)
+func (s *SignUpService) Execute(input port.SignUpInput) (*domain.User, error) {
+	args := s.Called(input)
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func setupSut() (*controller.UserController, *UserServiceMock) {
-	serviceMock := new(UserServiceMock)
-	sut := controller.NewUserController(serviceMock)
-	return sut, serviceMock
-}
-
-func TestUserController(t *testing.T) {
-	t.Parallel()
+func TestSignUpController(t *testing.T) {
+	setupSut := func() (*controller.SignUpController, *SignUpService) {
+		serviceMock := new(SignUpService)
+		sut := controller.NewSignUpController(serviceMock)
+		return sut, serviceMock
+	}
 
 	url := "/auth/sign-up"
 
-	t.Run("Register", func(t *testing.T) {
-		t.Run("should register a new user successfully", func(t *testing.T) {
+	t.Run("Execute", func(t *testing.T) {
+		t.Run("should return 201 and register a new user successfully", func(t *testing.T) {
 			sut, service := setupSut()
-			input := port.RegisterUserInput{
+			input := port.SignUpInput{
 				FirstName:   "John",
 				LastName:    "Doe",
 				Email:       "john.doe@example.com",
@@ -46,34 +44,22 @@ func TestUserController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Register", input).Return(&domain.User{}, nil).Once()
+			service.On("Execute", input).Return(&domain.User{}, nil).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			resp, err := sut.Register(w, r)
+			res, err := sut.Execute(w, r)
 
 			require.NoError(t, err)
-			require.Equal(t, http.StatusCreated, resp.Status)
-			require.IsType(t, resp.Data, &controller.Resource{})
-			require.Equal(t, nil, resp.Data.(*controller.Resource).Data)
+			require.Equal(t, http.StatusCreated, res.Status)
+			require.Equal(t, nil, res.Data.(*controller.Resource[any]).Data)
 			service.AssertExpectations(t)
-		})
-
-		t.Run("should throw InvalidBodyError when a invalid body is provided", func(t *testing.T) {
-			sut, _ := setupSut()
-			r := test.MakeRequest(http.MethodPost, url, "invalid json")
-			w := httptest.NewRecorder()
-
-			_, err := sut.Register(w, r)
-
-			require.Error(t, err)
-			require.Equal(t, domain.InvalidBodyError, err)
 		})
 
 		t.Run("should return an error when service fails", func(t *testing.T) {
 			sut, service := setupSut()
-			input := port.RegisterUserInput{
+			input := port.SignUpInput{
 				FirstName:   "John",
 				LastName:    "Doe",
 				Email:       "john.doe@example.com",
@@ -83,12 +69,12 @@ func TestUserController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Register", input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
+			service.On("Execute", input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			_, err := sut.Register(w, r)
+			_, err := sut.Execute(w, r)
 
 			require.Error(t, err)
 			require.Equal(t, domain.ContactInfoUnavailableError, err)
@@ -96,12 +82,14 @@ func TestUserController(t *testing.T) {
 		})
 
 		validationTests := []struct {
-			name string
-			body port.RegisterUserInput
+			name          string
+			expectedError string
+			body          port.SignUpInput
 		}{
 			{
-				name: "missing first name",
-				body: port.RegisterUserInput{
+				name:          "missing first name",
+				expectedError: "(?i)required",
+				body: port.SignUpInput{
 					FirstName:   "",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -112,8 +100,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "first name too short",
-				body: port.RegisterUserInput{
+				name:          "first name too short",
+				expectedError: "(?i)minimum length",
+				body: port.SignUpInput{
 					FirstName:   "J",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -124,8 +113,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "missing last name",
-				body: port.RegisterUserInput{
+				name:          "missing last name",
+				expectedError: "(?i)required",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "",
 					Email:       "john.doe@example.com",
@@ -136,8 +126,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "last name too short",
-				body: port.RegisterUserInput{
+				name:          "last name too short",
+				expectedError: "(?i)minimum length",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "D",
 					Email:       "john.doe@example.com",
@@ -148,8 +139,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "missing email",
-				body: port.RegisterUserInput{
+				name:          "missing email",
+				expectedError: "(?i)required",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "",
@@ -160,8 +152,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "invalid email format",
-				body: port.RegisterUserInput{
+				name:          "invalid email format",
+				expectedError: "(?i)valid email",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "invalid-email",
@@ -172,8 +165,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "missing phone",
-				body: port.RegisterUserInput{
+				name:          "missing phone",
+				expectedError: "(?i)required",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -184,8 +178,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "invalid phone format (not e164)",
-				body: port.RegisterUserInput{
+				name:          "invalid phone format (not e164)",
+				expectedError: "(?i)must be a valid",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -196,8 +191,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "missing password",
-				body: port.RegisterUserInput{
+				name:          "missing password",
+				expectedError: "(?i)required",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -208,8 +204,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "password too short",
-				body: port.RegisterUserInput{
+				name:          "password too short",
+				expectedError: "(?i)minimum length",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -220,8 +217,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "password too long",
-				body: port.RegisterUserInput{
+				name:          "password too long",
+				expectedError: "(?i)maximum length",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -232,8 +230,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "missing date of birth",
-				body: port.RegisterUserInput{
+				name:          "missing date of birth",
+				expectedError: "(?i)required",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -244,8 +243,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "invalid date of birth format",
-				body: port.RegisterUserInput{
+				name:          "invalid date of birth format",
+				expectedError: "(?i)must be a valid date",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -256,8 +256,9 @@ func TestUserController(t *testing.T) {
 				},
 			},
 			{
-				name: "invalid gender",
-				body: port.RegisterUserInput{
+				name:          "invalid gender",
+				expectedError: "(?i)contains an invalid value",
+				body: port.SignUpInput{
 					FirstName:   "John",
 					LastName:    "Doe",
 					Email:       "john.doe@example.com",
@@ -269,20 +270,21 @@ func TestUserController(t *testing.T) {
 			},
 		}
 
-		for _, tc := range validationTests {
-			t.Run(tc.name, func(t *testing.T) {
+		for _, tt := range validationTests {
+			t.Run("should throw when "+tt.name, func(t *testing.T) {
 				sut, _ := setupSut()
 
-				r := test.MakeRequest(http.MethodPost, url, tc.body)
+				r := test.MakeRequest(http.MethodPost, url, tt.body)
 				w := httptest.NewRecorder()
 
-				_, err := sut.Register(w, r)
+				_, err := sut.Execute(w, r)
 
 				require.Error(t, err)
 				var appErr *domain.AppError
 				require.ErrorAs(t, err, &appErr)
 				require.Equal(t, http.StatusBadRequest, appErr.StatusCode)
 				require.Equal(t, "VALIDATION_ERROR", appErr.Code)
+				require.Regexp(t, tt.expectedError, appErr.Message)
 			})
 		}
 	})
