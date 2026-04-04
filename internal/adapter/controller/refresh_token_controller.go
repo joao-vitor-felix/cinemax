@@ -19,7 +19,7 @@ func NewRefreshTokenController(service port.RefreshTokenService) *RefreshTokenCo
 
 // Execute godoc
 //
-// @Symmary Refresh access token
+// @Summary Refresh access token
 // @Description Refresh the access token using a valid refresh token.
 // @Tags Auth
 // @Accept json
