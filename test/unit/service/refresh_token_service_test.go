@@ -57,7 +57,7 @@ func TestRefreshTokenService(t *testing.T) {
 
 	validOldToken := &domain.RefreshToken{
 		Token:     input.RefreshToken,
-		UserId:    userId.String(),
+		UserID:    userId.String(),
 		ExpiresAt: time.Now().Add(time.Hour * 1),
 	}
 
@@ -72,7 +72,7 @@ func TestRefreshTokenService(t *testing.T) {
 			userRepo.On("FindByID", validOldToken.UserId).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
-				Id:    userId.String(),
+				ID:    userId.String(),
 				Email: mockUser.Email,
 			}).Return(expectedAccessToken, nil).Once()
 
@@ -117,7 +117,7 @@ func TestRefreshTokenService(t *testing.T) {
 			usedTime := time.Now().Add(-1 * time.Hour)
 			usedToken := &domain.RefreshToken{
 				Token:     input.RefreshToken,
-				UserId:    userId.String(),
+				UserID:    userId.String(),
 				ExpiresAt: time.Now().Add(time.Hour * 1),
 				UsedAt:    &usedTime,
 			}
@@ -140,7 +140,7 @@ func TestRefreshTokenService(t *testing.T) {
 
 			expiredToken := &domain.RefreshToken{
 				Token:     input.RefreshToken,
-				UserId:    userId.String(),
+				UserID:    userId.String(),
 				ExpiresAt: time.Now().Add(-1 * time.Hour),
 			}
 
@@ -184,7 +184,7 @@ func TestRefreshTokenService(t *testing.T) {
 			userRepo.On("FindByID", validOldToken.UserId).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
-				Id:    userId.String(),
+				ID:    userId.String(),
 				Email: mockUser.Email,
 			}).Return("", expectedErr).Once()
 
@@ -207,7 +207,7 @@ func TestRefreshTokenService(t *testing.T) {
 			userRepo.On("FindByID", validOldToken.UserId).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
-				Id:    userId.String(),
+				ID:    userId.String(),
 				Email: mockUser.Email,
 			}).Return("at_123", nil).Once()
 

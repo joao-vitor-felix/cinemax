@@ -43,7 +43,7 @@ func (s *SignInService) Execute(input port.SignInInput) (*port.SignInOutput, err
 	}
 
 	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
-		Id:    user.ID.String(),
+		ID:    user.ID.String(),
 		Email: user.Email,
 	})
 

@@ -4,7 +4,7 @@ import "time"
 
 type RefreshToken struct {
 	Token     string
-	UserId    string
+	UserID    string
 	ExpiresAt time.Time
 	UsedAt    *time.Time
 	CreatedAt time.Time

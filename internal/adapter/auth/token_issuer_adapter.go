@@ -19,7 +19,7 @@ func (ti TokenIssuerAdapter) Generate(claims port.AccessTokenPayload) (string, e
 	mapClaims := jwt.MapClaims{
 		"exp":   time.Now().Add(time.Hour).Unix(),
 		"iat":   time.Now().Unix(),
-		"sub":   claims.Id,
+		"sub":   claims.ID,
 		"email": claims.Email,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, mapClaims)
@@ -49,7 +49,7 @@ func (ti TokenIssuerAdapter) Validate(tokenStr string) (*port.AccessTokenPayload
 	}
 
 	return &port.AccessTokenPayload{
-		Id:    payload["sub"].(string),
+		ID:    payload["sub"].(string),
 		Email: payload["email"].(string),
 	}, nil
 }

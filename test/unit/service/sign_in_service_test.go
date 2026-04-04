@@ -66,9 +66,9 @@ func TestSignInService(t *testing.T) {
 		Password: "password123",
 	}
 
-	userId := uuid.New()
+	userID := uuid.New()
 	mockUser := &domain.User{
-		ID:           userId,
+		ID:           userID,
 		Email:        input.Email,
 		PasswordHash: "hashed_password",
 	}
@@ -83,16 +83,16 @@ func TestSignInService(t *testing.T) {
 			userRepo.On("FindByEmail", input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
-				Id:    userId.String(),
+				ID:    userID.String(),
 				Email: mockUser.Email,
 			}).Return(expectedAccessToken, nil).Once()
 
 			rt := &domain.RefreshToken{
 				Token:     expectedRefreshToken,
-				UserId:    userId.String(),
+				UserID:    userID.String(),
 				ExpiresAt: time.Now().Add(time.Hour * 24),
 			}
-			refreshTokenRepo.On("GenerateToken", userId.String()).Return(rt, nil).Once()
+			refreshTokenRepo.On("GenerateToken", userID.String()).Return(rt, nil).Once()
 
 			output, err := sut.Execute(input)
 
@@ -168,7 +168,7 @@ func TestSignInService(t *testing.T) {
 			userRepo.On("FindByEmail", input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("access_token", nil).Once()
-			refreshTokenRepo.On("GenerateToken", userId.String()).Return(nil, expectedErr).Once()
+			refreshTokenRepo.On("GenerateToken", userID.String()).Return(nil, expectedErr).Once()
 
 			output, err := sut.Execute(input)
 

@@ -6,6 +6,6 @@ type TokenIssuer interface {
 }
 
 type AccessTokenPayload struct {
-	Id    string
+	ID    string
 	Email string
 }

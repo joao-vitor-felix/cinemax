@@ -35,7 +35,7 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 	}
 
 	if refreshToken.IsUsed() {
-		_ = s.refreshTokenRepo.DeleteTokensByUserID(refreshToken.UserId)
+		_ = s.refreshTokenRepo.DeleteTokensByUserID(refreshToken.UserID)
 		return nil, domain.InvalidCredentialsError
 	}
 
@@ -43,7 +43,7 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 		return nil, domain.InvalidCredentialsError
 	}
 
-	user, err := s.userRepo.FindByID(refreshToken.UserId)
+	user, err := s.userRepo.FindByID(refreshToken.UserID)
 
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 	}
 
 	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
-		Id:    user.ID.String(),
+		ID:    user.ID.String(),
 		Email: user.Email,
 	})
 

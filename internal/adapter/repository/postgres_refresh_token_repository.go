@@ -35,7 +35,7 @@ func (r *PostgresRefreshTokenRepository) GetByToken(token string) (*domain.Refre
 	var t domain.RefreshToken
 	err := r.db.QueryRow(query, token).Scan(
 		&t.Token,
-		&t.UserId,
+		&t.UserID,
 		&t.ExpiresAt,
 		&t.UsedAt,
 		&t.CreatedAt,
@@ -75,7 +75,7 @@ func (r *PostgresRefreshTokenRepository) GenerateToken(userId string) (*domain.R
 	var t domain.RefreshToken
 	err := r.db.QueryRow(query, tokenUUID, userId, expiresAt).Scan(
 		&t.Token,
-		&t.UserId,
+		&t.UserID,
 		&t.ExpiresAt,
 		&t.UsedAt,
 		&t.CreatedAt,
@@ -136,7 +136,7 @@ func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(token, u
 	var newToken domain.RefreshToken
 	err = tx.QueryRow(insertQuery, newTokenUUID, userId, expiresAt).Scan(
 		&newToken.Token,
-		&newToken.UserId,
+		&newToken.UserID,
 		&newToken.ExpiresAt,
 		&newToken.UsedAt,
 		&newToken.CreatedAt,
