@@ -156,6 +156,24 @@ func TestRefreshTokenService(t *testing.T) {
 			tokenIssuer.AssertNotCalled(t, "Generate")
 		})
 
+		t.Run("should return error when token is not found", func(t *testing.T) {
+			sut, refreshTokenRepo, userRepo, tokenIssuer := setupRefreshTokenSut()
+
+			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(nil, nil).Once()
+
+			output, err := sut.Execute(input)
+
+			require.Error(t, err)
+			require.Nil(t, output)
+			var appErr *domain.AppError
+			require.ErrorAs(t, err, &appErr)
+			require.Equal(t, "NOT_FOUND", appErr.Code)
+
+			refreshTokenRepo.AssertExpectations(t)
+			userRepo.AssertNotCalled(t, "FindByID")
+			tokenIssuer.AssertNotCalled(t, "Generate")
+		})
+
 		t.Run("should return error when user is not found", func(t *testing.T) {
 			sut, refreshTokenRepo, userRepo, tokenIssuer := setupRefreshTokenSut()
 
