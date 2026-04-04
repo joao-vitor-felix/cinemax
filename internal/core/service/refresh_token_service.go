@@ -45,12 +45,12 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 
 	user, err := s.userRepo.FindByID(refreshToken.UserId)
 
-	if user == nil {
-		return nil, domain.NotFoundError("user")
-	}
-
 	if err != nil {
 		return nil, err
+	}
+
+	if user == nil {
+		return nil, domain.NotFoundError("user")
 	}
 
 	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
