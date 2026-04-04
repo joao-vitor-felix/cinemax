@@ -38,8 +38,12 @@ func (ti TokenIssuerAdapter) Validate(tokenStr string) (*port.AccessTokenPayload
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 
-	if err != nil || !token.Valid {
+	if err != nil {
 		return &port.AccessTokenPayload{}, fmt.Errorf("token_issuer_adapter: failed to parse token: %w", err)
+	}
+
+	if !token.Valid {
+		return &port.AccessTokenPayload{}, fmt.Errorf("token_issuer_adapter: invalid token")
 	}
 
 	payload, ok := token.Claims.(jwt.MapClaims)
