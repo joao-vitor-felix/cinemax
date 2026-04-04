@@ -25,7 +25,7 @@ func (r *RefreshTokenRepositoryMock) GenerateToken(userId string) (*domain.Refre
 	return args.Get(0).(*domain.RefreshToken), args.Error(1)
 }
 
-func (r *RefreshTokenRepositoryMock) GenerateAndDeleteUsedToken(token, userId string) (*domain.RefreshToken, error) {
+func (r *RefreshTokenRepositoryMock) GenerateAndInvalidateUsedToken(token, userId string) (*domain.RefreshToken, error) {
 	args := r.Called(token, userId)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
