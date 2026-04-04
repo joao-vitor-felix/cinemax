@@ -26,12 +26,12 @@ func NewRefreshTokenService(
 func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
 	refreshToken, err := s.refreshTokenRepo.GetByToken(input.RefreshToken)
 
-	if refreshToken == nil {
-		return nil, domain.NotFoundError("token")
-	}
-
 	if err != nil {
 		return nil, err
+	}
+
+	if refreshToken == nil {
+		return nil, domain.NotFoundError("token")
 	}
 
 	if refreshToken.IsUsed() {
