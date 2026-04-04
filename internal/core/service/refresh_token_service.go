@@ -35,7 +35,10 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 	}
 
 	if refreshToken.IsUsed() {
-		_ = s.refreshTokenRepo.DeleteTokensByUserID(refreshToken.UserID)
+		err = s.refreshTokenRepo.DeleteTokensByUserID(refreshToken.UserID)
+		if err != nil {
+			return nil, err
+		}
 		return nil, domain.InvalidCredentialsError
 	}
 
