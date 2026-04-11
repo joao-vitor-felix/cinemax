@@ -18,7 +18,9 @@ func WriteErrorResponse(w http.ResponseWriter, err *domain.AppError) {
 		Message: err.Message,
 	}
 	jsonBytes, _ := json.Marshal(resp)
-	w.Write(jsonBytes)
+	if _, writeErr := w.Write(jsonBytes); writeErr != nil {
+		slog.Error("Failed to write error response", slog.Any("err", writeErr))
+	}
 }
 
 type AppHandler func(w http.ResponseWriter, r *http.Request) (controller.Response, error)
@@ -56,6 +58,8 @@ func MakeHandler(fn AppHandler) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
-		w.Write(jsonBytes)
+		if _, writeErr := w.Write(jsonBytes); writeErr != nil {
+			slog.Error("Failed to write error response", slog.Any("err", writeErr))
+		}
 	}
 }
