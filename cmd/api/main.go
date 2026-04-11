@@ -39,7 +39,13 @@ func main() {
 	flag.IntVar(&port, "port", 8080, "server port")
 	flag.Parse()
 	db := database.OpenPool()
-	defer db.Close()
+
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	if migrate {
 		err := database.RunMigrations(db)
 		if err != nil {

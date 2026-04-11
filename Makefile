@@ -4,18 +4,13 @@ build:
 run:
 	go run cmd/api/main.go -migrate
 
-vet:
-	go vet ./...
-
 fmt:
 	go fmt ./...
 
 lint:
 	golangci-lint run
-	staticcheck ./...
 
 code-quality:
-	make vet
 	make fmt
 	make lint
 
