@@ -37,14 +37,14 @@ type User struct {
 	UpdatedAt       time.Time
 }
 
-func (u *User) IsAgeValid() bool {
+func (u *User) IsAgeValid(targetAge int) bool {
 	dob, _ := time.Parse("2006-01-02", u.DateOfBirth)
 	now := time.Now()
-	years := now.Year() - dob.Year()
+	age := now.Year() - dob.Year()
 	if now.YearDay() < dob.YearDay() {
-		years--
+		age--
 	}
-	return years >= 13
+	return age >= targetAge
 }
 
 func NewUser(firstName, lastName, email, phone, dateOfBirth string, gender Gender) (*User, error) {
@@ -60,9 +60,6 @@ func NewUser(firstName, lastName, email, phone, dateOfBirth string, gender Gende
 
 	if !user.Gender.IsValid() {
 		return nil, InvalidGenderError
-	}
-	if !user.IsAgeValid() {
-		return nil, UserTooYoungError
 	}
 	return user, nil
 }

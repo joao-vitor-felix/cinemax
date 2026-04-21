@@ -14,13 +14,6 @@ func TestUserEntity(t *testing.T) {
 		require.Equal(t, domain.InvalidGenderError, err)
 	})
 
-	t.Run("should return UserTooYoungError when user is under 13 years old", func(t *testing.T) {
-		_, err := domain.NewUser("John", "Doe", "john.doe@example.com", "+12125551234", "2015-01-01", "male")
-
-		require.Error(t, err)
-		require.Equal(t, domain.UserTooYoungError, err)
-	})
-
 	t.Run("should return a user successfully", func(t *testing.T) {
 		firstName := "John"
 		lastName := "Doe"
