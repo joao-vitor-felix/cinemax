@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/google/uuid"
@@ -15,7 +16,7 @@ func NewPostgresFederatedIdentitiesRepository(db *sql.DB) *PostgresFederatedIden
 	return &PostgresFederatedIdentitiesRepository{db}
 }
 
-func (r *PostgresFederatedIdentitiesRepository) GetByProviderUserID(provider, providerUserID string) (*domain.FederatedIdentity, error) {
+func (r *PostgresFederatedIdentitiesRepository) GetByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.FederatedIdentity, error) {
 	query := `
 	SELECT
 		id,
@@ -32,7 +33,7 @@ func (r *PostgresFederatedIdentitiesRepository) GetByProviderUserID(provider, pr
 
 	var fi domain.FederatedIdentity
 
-	err := r.db.QueryRow(query, provider, providerUserID).Scan(
+	err := r.db.QueryRowContext(ctx, query, provider, providerUserID).Scan(
 		&fi.ID,
 		&fi.UserID,
 		&fi.Provider,
@@ -51,7 +52,7 @@ func (r *PostgresFederatedIdentitiesRepository) GetByProviderUserID(provider, pr
 	return &fi, nil
 }
 
-func (r *PostgresFederatedIdentitiesRepository) CreateFederatedIdentity(userID, provider, providerUserID string) (*domain.FederatedIdentity, error) {
+func (r *PostgresFederatedIdentitiesRepository) CreateFederatedIdentity(ctx context.Context, userID, provider, providerUserID string) (*domain.FederatedIdentity, error) {
 	query := `
 	INSERT INTO federated_identities (user_id, provider, provider_user_id)
 	VALUES ($1, $2, $3)
@@ -69,7 +70,7 @@ func (r *PostgresFederatedIdentitiesRepository) CreateFederatedIdentity(userID, 
 	fi.Provider = provider
 	fi.ProviderUserID = providerUserID
 
-	err = r.db.QueryRow(query, userID, provider, providerUserID).Scan(
+	err = r.db.QueryRowContext(ctx, query, userID, provider, providerUserID).Scan(
 		&fi.ID,
 		&fi.CreatedAt,
 	)

@@ -51,10 +51,10 @@ func TestSignUpService(t *testing.T) {
 			sut, repoMock, hasherMock := setupSut()
 
 			expectedHash := "hashed_password_123"
-			repoMock.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, nil)
+			repoMock.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(true, nil)
 			hasherMock.On("Hash", input.Password).Return(expectedHash, nil)
-			repoMock.On("Create", mock.AnythingOfType("*domain.User")).Run(func(args mock.Arguments) {
-				arg := args.Get(0).(*domain.User)
+			repoMock.On("Create", mock.Anything, mock.AnythingOfType("*domain.User")).Run(func(args mock.Arguments) {
+				arg := args.Get(1).(*domain.User)
 				require.Equal(t, input.FirstName, arg.FirstName)
 				require.Equal(t, input.LastName, arg.LastName)
 				require.Equal(t, input.Email, arg.Email)
@@ -106,7 +106,7 @@ func TestSignUpService(t *testing.T) {
 
 		t.Run("should return ContactInfoUnavailableError when contact data is already taken", func(t *testing.T) {
 			sut, repoMock, _ := setupSut()
-			repoMock.On("IsContactInfoAvailable", input.Email, input.Phone).Return(false, nil).Once()
+			repoMock.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(false, nil).Once()
 			_, err := sut.Execute(input)
 
 			require.Error(t, err)
@@ -122,7 +122,7 @@ func TestSignUpService(t *testing.T) {
 		t.Run("should return error when IsContactInfoAvailable fails", func(t *testing.T) {
 			sut, repoMock, _ := setupSut()
 			expectedErr := errors.New("database connection failed")
-			repoMock.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, expectedErr).Once()
+			repoMock.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(true, expectedErr).Once()
 
 			_, err := sut.Execute(input)
 
@@ -135,7 +135,7 @@ func TestSignUpService(t *testing.T) {
 		t.Run("should return error when password hashing fails", func(t *testing.T) {
 			sut, mockRepo, hasherMock := setupSut()
 			expectedErr := errors.New("hashing failed")
-			mockRepo.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, nil).Once()
+			mockRepo.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(true, nil).Once()
 			hasherMock.On("Hash", input.Password).Return("", expectedErr).Once()
 
 			_, err := sut.Execute(input)
@@ -151,9 +151,9 @@ func TestSignUpService(t *testing.T) {
 			expectedErr := errors.New("database insert failed")
 			expectedHash := "hashed_password_123"
 
-			mockRepo.On("IsContactInfoAvailable", input.Email, input.Phone).Return(true, nil).Once()
+			mockRepo.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(true, nil).Once()
 			hasherMock.On("Hash", input.Password).Return(expectedHash, nil).Once()
-			mockRepo.On("Create", mock.AnythingOfType("*domain.User")).Return(nil, expectedErr).Once()
+			mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.User")).Return(nil, expectedErr).Once()
 
 			_, err := sut.Execute(input)
 

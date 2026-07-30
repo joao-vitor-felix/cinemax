@@ -68,8 +68,8 @@ func TestRefreshTokenService(t *testing.T) {
 			expectedAccessToken := "new_access_token"
 			expectedNewRefreshToken := "new_refresh_token"
 
-			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(validOldToken, nil).Once()
-			userRepo.On("FindByID", validOldToken.UserID).Return(mockUser, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			userRepo.On("FindByID", mock.Anything, validOldToken.UserID).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
 				ID:    userId.String(),
@@ -79,7 +79,7 @@ func TestRefreshTokenService(t *testing.T) {
 			newRt := &domain.RefreshToken{
 				Token: expectedNewRefreshToken,
 			}
-			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", input.RefreshToken, userId.String()).Return(newRt, nil).Once()
+			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.RefreshToken, userId.String()).Return(newRt, nil).Once()
 
 			output, err := sut.Execute(input)
 
@@ -96,7 +96,7 @@ func TestRefreshTokenService(t *testing.T) {
 		t.Run("should return error when token is not found", func(t *testing.T) {
 			sut, refreshTokenRepo, userRepo, tokenIssuer := setupRefreshTokenSut()
 
-			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(nil, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(nil, nil).Once()
 
 			output, err := sut.Execute(input)
 
@@ -122,8 +122,8 @@ func TestRefreshTokenService(t *testing.T) {
 				UsedAt:    &usedTime,
 			}
 
-			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(usedToken, nil).Once()
-			refreshTokenRepo.On("DeleteTokensByUserID", userId.String()).Return(nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(usedToken, nil).Once()
+			refreshTokenRepo.On("DeleteTokensByUserID", mock.Anything, userId.String()).Return(nil).Once()
 
 			output, err := sut.Execute(input)
 
@@ -144,7 +144,7 @@ func TestRefreshTokenService(t *testing.T) {
 				ExpiresAt: time.Now().Add(-1 * time.Hour),
 			}
 
-			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(expiredToken, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(expiredToken, nil).Once()
 
 			output, err := sut.Execute(input)
 
@@ -159,8 +159,8 @@ func TestRefreshTokenService(t *testing.T) {
 		t.Run("should return error when user is not found", func(t *testing.T) {
 			sut, refreshTokenRepo, userRepo, tokenIssuer := setupRefreshTokenSut()
 
-			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(validOldToken, nil).Once()
-			userRepo.On("FindByID", validOldToken.UserID).Return(nil, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			userRepo.On("FindByID", mock.Anything, validOldToken.UserID).Return(nil, nil).Once()
 
 			output, err := sut.Execute(input)
 
@@ -180,8 +180,8 @@ func TestRefreshTokenService(t *testing.T) {
 
 			expectedErr := errors.New("token gen fail")
 
-			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(validOldToken, nil).Once()
-			userRepo.On("FindByID", validOldToken.UserID).Return(mockUser, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			userRepo.On("FindByID", mock.Anything, validOldToken.UserID).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
 				ID:    userId.String(),
@@ -203,15 +203,15 @@ func TestRefreshTokenService(t *testing.T) {
 
 			expectedErr := errors.New("db error replacing token")
 
-			refreshTokenRepo.On("GetByToken", input.RefreshToken).Return(validOldToken, nil).Once()
-			userRepo.On("FindByID", validOldToken.UserID).Return(mockUser, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			userRepo.On("FindByID", mock.Anything, validOldToken.UserID).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
 				ID:    userId.String(),
 				Email: mockUser.Email,
 			}).Return("at_123", nil).Once()
 
-			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", input.RefreshToken, userId.String()).Return(nil, expectedErr).Once()
+			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.RefreshToken, userId.String()).Return(nil, expectedErr).Once()
 
 			output, err := sut.Execute(input)
 
