@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
@@ -26,8 +28,9 @@ func NewSignInService(
 	}
 }
 
-func (s *SignInService) Execute(input port.SignInInput) (*port.SignInOutput, error) {
-	user, err := s.userRepo.FindByEmail(input.Email)
+func (s *SignInService) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
+
+	user, err := s.userRepo.FindByEmail(ctx, input.Email)
 
 	if err != nil {
 		return nil, err
@@ -51,7 +54,7 @@ func (s *SignInService) Execute(input port.SignInInput) (*port.SignInOutput, err
 		return nil, err
 	}
 
-	refreshToken, err := s.refreshTokenRepo.GenerateToken(user.ID.String())
+	refreshToken, err := s.refreshTokenRepo.GenerateToken(ctx, user.ID.String())
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -81,7 +82,7 @@ func TestRefreshTokenService(t *testing.T) {
 			}
 			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.RefreshToken, userId.String()).Return(newRt, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.NoError(t, err)
 			require.NotNil(t, output)
@@ -98,7 +99,7 @@ func TestRefreshTokenService(t *testing.T) {
 
 			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(nil, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.Error(t, err)
 			require.Nil(t, output)
@@ -125,7 +126,7 @@ func TestRefreshTokenService(t *testing.T) {
 			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(usedToken, nil).Once()
 			refreshTokenRepo.On("DeleteTokensByUserID", mock.Anything, userId.String()).Return(nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, domain.InvalidCredentialsError)
 			require.Nil(t, output)
@@ -146,7 +147,7 @@ func TestRefreshTokenService(t *testing.T) {
 
 			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(expiredToken, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, domain.InvalidCredentialsError)
 			require.Nil(t, output)
@@ -162,7 +163,7 @@ func TestRefreshTokenService(t *testing.T) {
 			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
 			userRepo.On("FindByID", mock.Anything, validOldToken.UserID).Return(nil, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.Error(t, err)
 			require.Nil(t, output)
@@ -188,7 +189,7 @@ func TestRefreshTokenService(t *testing.T) {
 				Email: mockUser.Email,
 			}).Return("", expectedErr).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, expectedErr)
 			require.Nil(t, output)
@@ -213,7 +214,7 @@ func TestRefreshTokenService(t *testing.T) {
 
 			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.RefreshToken, userId.String()).Return(nil, expectedErr).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, expectedErr)
 			require.Nil(t, output)

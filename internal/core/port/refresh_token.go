@@ -24,5 +24,5 @@ type RefreshTokenOutput struct {
 }
 
 type RefreshTokenService interface {
-	Execute(input RefreshTokenInput) (*RefreshTokenOutput, error)
+	Execute(ctx context.Context, input RefreshTokenInput) (*RefreshTokenOutput, error)
 }

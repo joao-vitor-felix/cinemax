@@ -1,6 +1,10 @@
 package port
 
-import "github.com/joao-vitor-felix/cinemax/internal/core/domain"
+import (
+	"context"
+
+	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
+)
 
 type SignUpInput struct {
 	FirstName   string        `json:"first_name" validate:"required,min=2"`
@@ -13,5 +17,5 @@ type SignUpInput struct {
 }
 
 type SignUpService interface {
-	Execute(input SignUpInput) (*domain.User, error)
+	Execute(ctx context.Context, input SignUpInput) (*domain.User, error)
 }

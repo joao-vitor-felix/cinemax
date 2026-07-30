@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
@@ -23,8 +25,9 @@ func NewRefreshTokenService(
 	}
 }
 
-func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
-	refreshToken, err := s.refreshTokenRepo.GetByToken(input.RefreshToken)
+func (s *RefreshTokenService) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
+
+	refreshToken, err := s.refreshTokenRepo.GetByToken(ctx, input.RefreshToken)
 
 	if err != nil {
 		return nil, err
@@ -35,7 +38,7 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 	}
 
 	if refreshToken.IsUsed() {
-		err = s.refreshTokenRepo.DeleteTokensByUserID(refreshToken.UserID)
+		err = s.refreshTokenRepo.DeleteTokensByUserID(ctx, refreshToken.UserID)
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +49,7 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 		return nil, domain.InvalidCredentialsError
 	}
 
-	user, err := s.userRepo.FindByID(refreshToken.UserID)
+	user, err := s.userRepo.FindByID(ctx, refreshToken.UserID)
 
 	if err != nil {
 		return nil, err
@@ -65,7 +68,7 @@ func (s *RefreshTokenService) Execute(input port.RefreshTokenInput) (*port.Refre
 		return nil, err
 	}
 
-	newRefreshToken, err := s.refreshTokenRepo.GenerateAndInvalidateUsedToken(refreshToken.Token, user.ID.String())
+	newRefreshToken, err := s.refreshTokenRepo.GenerateAndInvalidateUsedToken(ctx, refreshToken.Token, user.ID.String())
 	if err != nil {
 		return nil, err
 	}

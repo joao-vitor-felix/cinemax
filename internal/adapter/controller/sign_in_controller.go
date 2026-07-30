@@ -41,7 +41,7 @@ func (c *SignInController) Execute(w http.ResponseWriter, r *http.Request) (Resp
 		slog.Error("validation error", "error", err)
 		return Response{}, err
 	}
-	output, err := c.service.Execute(body)
+	output, err := c.service.Execute(r.Context(), body)
 
 	if err != nil {
 		return Response{}, err

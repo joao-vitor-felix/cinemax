@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -94,7 +95,7 @@ func TestSignInService(t *testing.T) {
 			}
 			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(rt, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.NoError(t, err)
 			require.NotNil(t, output)
@@ -112,7 +113,7 @@ func TestSignInService(t *testing.T) {
 
 			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(nil, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, domain.InvalidCredentialsError)
 			require.Nil(t, output)
@@ -129,7 +130,7 @@ func TestSignInService(t *testing.T) {
 			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(errors.New("invalid password")).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, domain.InvalidCredentialsError)
 			require.Nil(t, output)
@@ -149,7 +150,7 @@ func TestSignInService(t *testing.T) {
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("", expectedErr).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, expectedErr)
 			require.Nil(t, output)
@@ -170,7 +171,7 @@ func TestSignInService(t *testing.T) {
 			tokenIssuer.On("Generate", mock.Anything).Return("access_token", nil).Once()
 			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(nil, expectedErr).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, expectedErr)
 			require.Nil(t, output)

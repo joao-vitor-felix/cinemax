@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -76,7 +77,7 @@ func TestSignUpService(t *testing.T) {
 				UpdatedAt:       time.Now(),
 			}, nil).Once()
 
-			user, err := sut.Execute(input)
+			user, err := sut.Execute(context.Background(), input)
 
 			require.NoError(t, err)
 			require.NotZero(t, user.ID)
@@ -97,7 +98,7 @@ func TestSignUpService(t *testing.T) {
 			invalidInput := input
 			invalidInput.Gender = "invalid_gender"
 
-			_, err := sut.Execute(invalidInput)
+			_, err := sut.Execute(context.Background(), invalidInput)
 
 			require.Error(t, err)
 			var appErr *domain.AppError
@@ -107,7 +108,7 @@ func TestSignUpService(t *testing.T) {
 		t.Run("should return ContactInfoUnavailableError when contact data is already taken", func(t *testing.T) {
 			sut, repoMock, _ := setupSut()
 			repoMock.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(false, nil).Once()
-			_, err := sut.Execute(input)
+			_, err := sut.Execute(context.Background(), input)
 
 			require.Error(t, err)
 			appErr, ok := err.(*domain.AppError)
@@ -124,7 +125,7 @@ func TestSignUpService(t *testing.T) {
 			expectedErr := errors.New("database connection failed")
 			repoMock.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(true, expectedErr).Once()
 
-			_, err := sut.Execute(input)
+			_, err := sut.Execute(context.Background(), input)
 
 			require.Error(t, err)
 			require.Equal(t, expectedErr, err)
@@ -138,7 +139,7 @@ func TestSignUpService(t *testing.T) {
 			mockRepo.On("IsContactInfoAvailable", mock.Anything, input.Email, input.Phone).Return(true, nil).Once()
 			hasherMock.On("Hash", input.Password).Return("", expectedErr).Once()
 
-			_, err := sut.Execute(input)
+			_, err := sut.Execute(context.Background(), input)
 
 			require.Error(t, err)
 			require.Equal(t, expectedErr, err)
@@ -155,7 +156,7 @@ func TestSignUpService(t *testing.T) {
 			hasherMock.On("Hash", input.Password).Return(expectedHash, nil).Once()
 			mockRepo.On("Create", mock.Anything, mock.AnythingOfType("*domain.User")).Return(nil, expectedErr).Once()
 
-			_, err := sut.Execute(input)
+			_, err := sut.Execute(context.Background(), input)
 
 			require.Error(t, err)
 			require.Equal(t, expectedErr, err)

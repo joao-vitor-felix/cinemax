@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
@@ -17,7 +19,8 @@ func NewSignUpService(userRepo port.UserRepository, passwordHasher port.Password
 	}
 }
 
-func (s *SignUpService) Execute(input port.SignUpInput) (*domain.User, error) {
+func (s *SignUpService) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
+
 	user, err := domain.NewUser(
 		input.FirstName,
 		input.LastName,
@@ -29,7 +32,7 @@ func (s *SignUpService) Execute(input port.SignUpInput) (*domain.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	isAvailable, err := s.userRepo.IsContactInfoAvailable(user.Email, user.Phone)
+	isAvailable, err := s.userRepo.IsContactInfoAvailable(ctx, user.Email, user.Phone)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +44,7 @@ func (s *SignUpService) Execute(input port.SignUpInput) (*domain.User, error) {
 		return nil, err
 	}
 	user.PasswordHash = passwordHash
-	createdUser, err := s.userRepo.Create(user)
+	createdUser, err := s.userRepo.Create(ctx, user)
 	if err != nil {
 		return nil, err
 	}
