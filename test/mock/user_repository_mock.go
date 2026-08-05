@@ -44,3 +44,19 @@ func (m *UserRepositoryMock) CreateWithIdentity(ctx context.Context, user *domai
 	args := m.Called(ctx, user, identity)
 	return args.Error(0)
 }
+
+func (m *UserRepositoryMock) FindByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error) {
+	args := m.Called(ctx, provider, providerUserID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.User), args.Error(1)
+}
+
+func (m *UserRepositoryMock) LinkIdentity(ctx context.Context, userID, provider, providerUserID string) (*domain.FederatedIdentity, error) {
+	args := m.Called(ctx, userID, provider, providerUserID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*domain.FederatedIdentity), args.Error(1)
+}

@@ -63,3 +63,17 @@ func NewUser(firstName, lastName, email, phone, dateOfBirth string, gender Gende
 	}
 	return user, nil
 }
+
+func NewOAuthUser(firstName, lastName, email string, profilePhotoURL *string) *User {
+	return &User{
+		ID:              uuid.New(),
+		FirstName:       firstName,
+		LastName:        lastName,
+		Email:           email,
+		Phone:           "",
+		PasswordHash:    "",
+		DateOfBirth:     "",
+		Gender:          PreferNotToSay,
+		ProfilePhotoURL: profilePhotoURL,
+	}
+}

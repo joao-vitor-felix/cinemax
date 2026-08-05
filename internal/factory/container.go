@@ -2,6 +2,7 @@ package factory
 
 import (
 	"database/sql"
+	"os"
 
 	"github.com/joao-vitor-felix/cinemax/internal/adapter/auth"
 	"github.com/joao-vitor-felix/cinemax/internal/adapter/controller"
@@ -10,28 +11,33 @@ import (
 )
 
 type Container struct {
-	SignUpController       *controller.SignUpController
-	SignInController       *controller.SignInController
-	RefreshTokenController *controller.RefreshTokenController
+	SignUpController           *controller.SignUpController
+	SignInController           *controller.SignInController
+	RefreshTokenController     *controller.RefreshTokenController
+	SignInWithGoogleController *controller.SignInGoogleController
 }
 
 func NewContainer(db *sql.DB) *Container {
-	// Adapters
-	passwordHasher := auth.NewPasswordHasherAdapter()
-	tokenIssuer := auth.NewTokenIssuerAdapter()
+	passwordHasherAdapter := auth.NewPasswordHasherAdapter()
+	tokenIssuerAdapter := auth.NewTokenIssuerAdapter()
+	googleOAuthAdapter := auth.NewGoogleOAuthAdapter(
+		os.Getenv("GOOGLE_CLIENT_ID"),
+		os.Getenv("GOOGLE_CLIENT_SECRET"),
+		os.Getenv("GOOGLE_REDIRECT_URI"),
+	)
 
-	// Repositories
 	userRepo := repository.NewPostgresUserRepository(db)
 	refreshTokenRepo := repository.NewPostgresRefreshTokenRepository(db)
 
-	// Services
-	signUpService := service.NewSignUpService(userRepo, passwordHasher)
-	signInService := service.NewSignInService(userRepo, passwordHasher, tokenIssuer, refreshTokenRepo)
-	refreshTokenService := service.NewRefreshTokenService(refreshTokenRepo, userRepo, tokenIssuer)
+	signUpService := service.NewSignUpService(userRepo, passwordHasherAdapter)
+	signInService := service.NewSignInService(userRepo, passwordHasherAdapter, tokenIssuerAdapter, refreshTokenRepo)
+	refreshTokenService := service.NewRefreshTokenService(refreshTokenRepo, userRepo, tokenIssuerAdapter)
+	signInGoogleService := service.NewSignInGoogleService(googleOAuthAdapter, userRepo, tokenIssuerAdapter, refreshTokenRepo)
 
 	return &Container{
-		SignUpController:       controller.NewSignUpController(signUpService),
-		SignInController:       controller.NewSignInController(signInService),
-		RefreshTokenController: controller.NewRefreshTokenController(refreshTokenService),
+		SignUpController:           controller.NewSignUpController(signUpService),
+		SignInController:           controller.NewSignInController(signInService),
+		RefreshTokenController:     controller.NewRefreshTokenController(refreshTokenService),
+		SignInWithGoogleController: controller.NewSignInGoogleController(signInGoogleService),
 	}
 }
