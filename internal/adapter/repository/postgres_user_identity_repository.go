@@ -86,7 +86,9 @@ func (r *PostgresUserRepository) CreateWithIdentity(ctx context.Context, user *d
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback()
+	}()
 
 	userQuery := `
 		INSERT INTO users (
@@ -145,4 +147,3 @@ func (r *PostgresUserRepository) CreateWithIdentity(ctx context.Context, user *d
 
 	return tx.Commit()
 }
-

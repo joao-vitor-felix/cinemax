@@ -48,7 +48,9 @@ func (g *GoogleOAuth) GetAccessToken(code string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to get access token: status %d", resp.StatusCode)
@@ -86,7 +88,9 @@ func (g *GoogleOAuth) GetUserInfo(accessToken string) (*port.UserInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to get user info: status %d", resp.StatusCode)
@@ -133,7 +137,9 @@ func (g *GoogleOAuth) RevokeAccessToken(accessToken string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to revoke access token: status %d", resp.StatusCode)
