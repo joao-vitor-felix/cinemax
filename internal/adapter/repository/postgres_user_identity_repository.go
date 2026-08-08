@@ -95,13 +95,8 @@ func (r *PostgresUserRepository) CreateWithIdentity(ctx context.Context, user *d
 			first_name,
 			last_name,
 			email,
-			phone,
-			password_hash,
-			date_of_birth,
-			gender,
-			profile_photo_url
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		VALUES ($1, $2, $3)
 		RETURNING id, created_at, updated_at
 	`
 	err = tx.QueryRowContext(
@@ -110,11 +105,6 @@ func (r *PostgresUserRepository) CreateWithIdentity(ctx context.Context, user *d
 		user.FirstName,
 		user.LastName,
 		user.Email,
-		user.Phone,
-		user.PasswordHash,
-		user.DateOfBirth,
-		user.Gender,
-		user.ProfilePhotoURL,
 	).Scan(
 		&user.ID,
 		&user.CreatedAt,
