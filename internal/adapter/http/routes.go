@@ -42,8 +42,8 @@ func SetupRoutes(container *factory.Container) http.Handler {
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/sign-up", m.MakeHandler(container.SignUpController.Execute))
 		r.Post("/sign-in", m.MakeHandler(container.SignInController.Execute))
+		r.Post("/sign-in/google", m.MakeHandler(container.SignInWithGoogleController.Execute))
 		r.Post("/refresh-token", m.MakeHandler(container.RefreshTokenController.Execute))
-		r.Post("/google", m.MakeHandler(container.SignInWithGoogleController.Execute))
 	})
 	return r
 }
