@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
@@ -24,7 +25,9 @@ func NewGoogleOAuthAdapter(clientID, clientSecret, redirectURI string) *GoogleOA
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		redirectURI:  redirectURI,
-		httpClient:   &http.Client{},
+		httpClient: &http.Client{
+			Timeout: time.Second * 10,
+		},
 	}
 }
 
