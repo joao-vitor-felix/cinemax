@@ -9,153 +9,177 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 	"github.com/joao-vitor-felix/cinemax/internal/core/service"
-	appMock "github.com/joao-vitor-felix/cinemax/test/mock"
-	"github.com/stretchr/testify/assert"
+	m "github.com/joao-vitor-felix/cinemax/test/mock"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
-func setupSignInGoogleTest() (
-	*appMock.OAuthServiceMock,
-	*appMock.UserRepositoryMock,
-	*TokenIssuerMock,
-	*appMock.RefreshTokenRepositoryMock,
+func setupSignInGoogleSut() (
 	port.SignInGoogleService,
+	*m.OAuthServiceMock,
+	*m.UserRepositoryMock,
+	*TokenIssuerMock,
+	*m.RefreshTokenRepositoryMock,
 ) {
-	oauthService := new(appMock.OAuthServiceMock)
-	userRepo := new(appMock.UserRepositoryMock)
+	oauthService := new(m.OAuthServiceMock)
+	userRepo := new(m.UserRepositoryMock)
 	tokenIssuer := new(TokenIssuerMock)
-	refreshTokenRepo := new(appMock.RefreshTokenRepositoryMock)
+	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
 
-	svc := service.NewSignInGoogleService(oauthService, userRepo, tokenIssuer, refreshTokenRepo)
+	sut := service.NewSignInGoogleService(oauthService, userRepo, tokenIssuer, refreshTokenRepo)
 
-	return oauthService, userRepo, tokenIssuer, refreshTokenRepo, svc
+	return sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo
 }
 
-func TestSignInGoogleService_SuccessNewUser(t *testing.T) {
-	oauthService, userRepo, tokenIssuer, refreshTokenRepo, svc := setupSignInGoogleTest()
-
+func TestSignInGoogleService(t *testing.T) {
 	code := "valid_code"
 	accessToken := "google_access_token"
 	googleID := "12345"
 	email := "test@example.com"
-	appAccessToken := "app_access_token"
 
-	oauthService.On("GetAccessToken", code).Return(accessToken, nil)
-	oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
-		ID:            googleID,
-		Email:         email,
-		VerifiedEmail: true,
-		GivenName:     "John",
-		FamilyName:    "Doe",
-		Picture:       "http://example.com/pic.jpg",
-	}, nil)
+	t.Run("Execute", func(t *testing.T) {
+		t.Run("should sign in a new user successfully", func(t *testing.T) {
+			sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo := setupSignInGoogleSut()
 
-	userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil)
-	userRepo.On("FindByEmail", mock.Anything, email).Return(nil, nil)
-	userRepo.On("CreateWithIdentity", mock.Anything, mock.AnythingOfType("*domain.User"), mock.AnythingOfType("*domain.FederatedIdentity")).Return(nil)
+			appAccessToken := "app_access_token"
+			expectedRefreshToken := "app_refresh_token"
 
-	tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil)
-	refreshTokenRepo.On("GenerateToken", mock.Anything, mock.AnythingOfType("string")).Return(&domain.RefreshToken{Token: "app_refresh_token"}, nil)
+			oauthService.On("GetAccessToken", code).Return(accessToken, nil).Once()
+			oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
+				ID:            googleID,
+				Email:         email,
+				VerifiedEmail: true,
+				GivenName:     "John",
+				FamilyName:    "Doe",
+				Picture:       "http://example.com/pic.jpg",
+			}, nil).Once()
 
-	output, err := svc.Execute(context.Background(), port.SignInGoogleInput{Code: code})
+			userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil).Once()
+			userRepo.On("FindByEmail", mock.Anything, email).Return(nil, nil).Once()
+			userRepo.On("CreateWithIdentity", mock.Anything, mock.AnythingOfType("*domain.User"), mock.AnythingOfType("*domain.FederatedIdentity")).Return(nil).Once()
 
-	assert.NoError(t, err)
-	assert.NotNil(t, output)
-	assert.Equal(t, appAccessToken, output.AccessToken)
-	assert.Equal(t, "app_refresh_token", output.RefreshToken)
-}
+			tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil).Once()
+			refreshTokenRepo.On("GenerateToken", mock.Anything, mock.AnythingOfType("string")).Return(&domain.RefreshToken{Token: expectedRefreshToken}, nil).Once()
 
-func TestSignInGoogleService_SuccessExistingLinkedUser(t *testing.T) {
-	oauthService, userRepo, tokenIssuer, refreshTokenRepo, svc := setupSignInGoogleTest()
+			output, err := sut.Execute(context.Background(), port.SignInGoogleInput{Code: code})
 
-	code := "valid_code"
-	accessToken := "google_access_token"
-	googleID := "12345"
-	email := "test@example.com"
-	userID := uuid.New()
-	appAccessToken := "app_access_token"
+			require.NoError(t, err)
+			require.NotNil(t, output)
+			require.Equal(t, appAccessToken, output.AccessToken)
+			require.Equal(t, expectedRefreshToken, output.RefreshToken)
 
-	oauthService.On("GetAccessToken", code).Return(accessToken, nil)
-	oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
-		ID:            googleID,
-		Email:         email,
-		VerifiedEmail: true,
-	}, nil)
+			oauthService.AssertExpectations(t)
+			userRepo.AssertExpectations(t)
+			tokenIssuer.AssertExpectations(t)
+			refreshTokenRepo.AssertExpectations(t)
+		})
 
-	user := &domain.User{ID: userID, Email: email}
-	userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(user, nil)
+		t.Run("should sign in an existing linked user successfully", func(t *testing.T) {
+			sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo := setupSignInGoogleSut()
 
-	tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil)
-	refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(&domain.RefreshToken{Token: "app_refresh_token"}, nil)
+			userID := uuid.New()
+			appAccessToken := "app_access_token"
+			expectedRefreshToken := "app_refresh_token"
 
-	output, err := svc.Execute(context.Background(), port.SignInGoogleInput{Code: code})
+			oauthService.On("GetAccessToken", code).Return(accessToken, nil).Once()
+			oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
+				ID:            googleID,
+				Email:         email,
+				VerifiedEmail: true,
+			}, nil).Once()
 
-	assert.NoError(t, err)
-	assert.NotNil(t, output)
-	assert.Equal(t, appAccessToken, output.AccessToken)
-}
+			user := &domain.User{ID: userID, Email: email}
+			userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(user, nil).Once()
 
-func TestSignInGoogleService_SuccessExistingUnlinkedUser(t *testing.T) {
-	oauthService, userRepo, tokenIssuer, refreshTokenRepo, svc := setupSignInGoogleTest()
+			tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil).Once()
+			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(&domain.RefreshToken{Token: expectedRefreshToken}, nil).Once()
 
-	code := "valid_code"
-	accessToken := "google_access_token"
-	googleID := "12345"
-	email := "test@example.com"
-	userID := uuid.New()
-	appAccessToken := "app_access_token"
+			output, err := sut.Execute(context.Background(), port.SignInGoogleInput{Code: code})
 
-	oauthService.On("GetAccessToken", code).Return(accessToken, nil)
-	oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
-		ID:            googleID,
-		Email:         email,
-		VerifiedEmail: true,
-	}, nil)
+			require.NoError(t, err)
+			require.NotNil(t, output)
+			require.Equal(t, appAccessToken, output.AccessToken)
+			require.Equal(t, expectedRefreshToken, output.RefreshToken)
 
-	userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil)
+			oauthService.AssertExpectations(t)
+			userRepo.AssertExpectations(t)
+			tokenIssuer.AssertExpectations(t)
+			refreshTokenRepo.AssertExpectations(t)
+		})
 
-	user := &domain.User{ID: userID, Email: email}
-	userRepo.On("FindByEmail", mock.Anything, email).Return(user, nil)
+		t.Run("should sign in an existing unlinked user successfully", func(t *testing.T) {
+			sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo := setupSignInGoogleSut()
 
-	userRepo.On("LinkIdentity", mock.Anything, userID.String(), "google", googleID).Return(&domain.FederatedIdentity{}, nil)
+			userID := uuid.New()
+			appAccessToken := "app_access_token"
+			expectedRefreshToken := "app_refresh_token"
 
-	tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil)
-	refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(&domain.RefreshToken{Token: "app_refresh_token"}, nil)
+			oauthService.On("GetAccessToken", code).Return(accessToken, nil).Once()
+			oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
+				ID:            googleID,
+				Email:         email,
+				VerifiedEmail: true,
+			}, nil).Once()
 
-	output, err := svc.Execute(context.Background(), port.SignInGoogleInput{Code: code})
+			userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil).Once()
 
-	assert.NoError(t, err)
-	assert.NotNil(t, output)
-	assert.Equal(t, appAccessToken, output.AccessToken)
-}
+			user := &domain.User{ID: userID, Email: email}
+			userRepo.On("FindByEmail", mock.Anything, email).Return(user, nil).Once()
 
-func TestSignInGoogleService_EmailNotVerified(t *testing.T) {
-	oauthService, _, _, _, svc := setupSignInGoogleTest()
+			userRepo.On("LinkIdentity", mock.Anything, userID.String(), "google", googleID).Return(&domain.FederatedIdentity{}, nil).Once()
 
-	code := "valid_code"
-	accessToken := "google_access_token"
+			tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil).Once()
+			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(&domain.RefreshToken{Token: expectedRefreshToken}, nil).Once()
 
-	oauthService.On("GetAccessToken", code).Return(accessToken, nil)
-	oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
-		VerifiedEmail: false,
-	}, nil)
+			output, err := sut.Execute(context.Background(), port.SignInGoogleInput{Code: code})
 
-	output, err := svc.Execute(context.Background(), port.SignInGoogleInput{Code: code})
+			require.NoError(t, err)
+			require.NotNil(t, output)
+			require.Equal(t, appAccessToken, output.AccessToken)
+			require.Equal(t, expectedRefreshToken, output.RefreshToken)
 
-	assert.Error(t, err)
-	assert.Equal(t, domain.EmailNotVerifiedError, err)
-	assert.Nil(t, output)
-}
+			oauthService.AssertExpectations(t)
+			userRepo.AssertExpectations(t)
+			tokenIssuer.AssertExpectations(t)
+			refreshTokenRepo.AssertExpectations(t)
+		})
 
-func TestSignInGoogleService_GetAccessTokenError(t *testing.T) {
-	oauthService, _, _, _, svc := setupSignInGoogleTest()
+		t.Run("should return error when email is not verified", func(t *testing.T) {
+			sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo := setupSignInGoogleSut()
 
-	code := "invalid_code"
-	oauthService.On("GetAccessToken", code).Return("", errors.New("invalid_grant"))
+			oauthService.On("GetAccessToken", code).Return(accessToken, nil).Once()
+			oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
+				VerifiedEmail: false,
+			}, nil).Once()
 
-	output, err := svc.Execute(context.Background(), port.SignInGoogleInput{Code: code})
+			output, err := sut.Execute(context.Background(), port.SignInGoogleInput{Code: code})
 
-	assert.Error(t, err)
-	assert.Equal(t, domain.InvalidCredentialsError, err)
-	assert.Nil(t, output)
+			require.Error(t, err)
+			require.Equal(t, domain.EmailNotVerifiedError, err)
+			require.Nil(t, output)
+
+			oauthService.AssertExpectations(t)
+			userRepo.AssertNotCalled(t, "FindByProviderUserID")
+			tokenIssuer.AssertNotCalled(t, "Generate")
+			refreshTokenRepo.AssertNotCalled(t, "GenerateToken")
+		})
+
+		t.Run("should return error when access token retrieval fails", func(t *testing.T) {
+			sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo := setupSignInGoogleSut()
+
+			invalidCode := "invalid_code"
+			oauthService.On("GetAccessToken", invalidCode).Return("", errors.New("invalid_grant")).Once()
+
+			output, err := sut.Execute(context.Background(), port.SignInGoogleInput{Code: invalidCode})
+
+			require.Error(t, err)
+			require.Equal(t, domain.InvalidCredentialsError, err)
+			require.Nil(t, output)
+
+			oauthService.AssertExpectations(t)
+			userRepo.AssertNotCalled(t, "FindByProviderUserID")
+			tokenIssuer.AssertNotCalled(t, "Generate")
+			refreshTokenRepo.AssertNotCalled(t, "GenerateToken")
+		})
+	})
 }
