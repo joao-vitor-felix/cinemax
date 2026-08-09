@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,8 +38,18 @@ type User struct {
 	UpdatedAt       time.Time
 }
 
+type OAuthUser struct {
+	FirstName string
+	LastName  string
+	Email     string
+}
+
 func (u *User) IsAgeValid(targetAge int) bool {
-	dob, _ := time.Parse("2006-01-02", u.DateOfBirth)
+	dob, err := time.Parse("2006-01-02", u.DateOfBirth)
+	if err != nil {
+		log.Default().Printf("Error parsing date of birth: %v", err)
+		return false
+	}
 	now := time.Now()
 	age := now.Year() - dob.Year()
 	if now.YearDay() < dob.YearDay() {
@@ -64,15 +75,10 @@ func NewUser(firstName, lastName, email, phone, dateOfBirth string, gender Gende
 	return user, nil
 }
 
-func NewOAuthUser(firstName, lastName, email string) *User {
-	return &User{
-		ID:           uuid.New(),
-		FirstName:    firstName,
-		LastName:     lastName,
-		Email:        email,
-		Phone:        "",
-		PasswordHash: "",
-		DateOfBirth:  "",
-		Gender:       PreferNotToSay,
+func NewOAuthUser(firstName, lastName, email string) *OAuthUser {
+	return &OAuthUser{
+		FirstName: firstName,
+		LastName:  lastName,
+		Email:     email,
 	}
 }

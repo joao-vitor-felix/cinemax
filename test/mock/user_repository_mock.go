@@ -3,6 +3,7 @@ package mock
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/stretchr/testify/mock"
 )
@@ -40,9 +41,12 @@ func (m *UserRepositoryMock) FindByID(ctx context.Context, id string) (*domain.U
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *UserRepositoryMock) CreateWithIdentity(ctx context.Context, user *domain.User, identity *domain.FederatedIdentity) error {
-	args := m.Called(ctx, user, identity)
-	return args.Error(0)
+func (m *UserRepositoryMock) CreateWithIdentity(ctx context.Context, firstName, lastName, email string, identity *domain.FederatedIdentity) (uuid.UUID, error) {
+	args := m.Called(ctx, firstName, lastName, email, identity)
+	if args.Get(0) == nil {
+		return uuid.Nil, args.Error(1)
+	}
+	return args.Get(0).(uuid.UUID), args.Error(1)
 }
 
 func (m *UserRepositoryMock) FindByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error) {

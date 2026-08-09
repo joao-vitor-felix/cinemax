@@ -3,6 +3,7 @@ package port
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
 
@@ -11,7 +12,7 @@ type UserRepository interface {
 	IsContactInfoAvailable(ctx context.Context, email, phone string) (bool, error)
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 	FindByID(ctx context.Context, id string) (*domain.User, error)
-	CreateWithIdentity(ctx context.Context, user *domain.User, identity *domain.FederatedIdentity) error
+	CreateWithIdentity(ctx context.Context, firstName, lastName, email string, identity *domain.FederatedIdentity) (uuid.UUID, error)
 	FindByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error)
 	LinkIdentity(ctx context.Context, userID, provider, providerUserID string) (*domain.FederatedIdentity, error)
 }

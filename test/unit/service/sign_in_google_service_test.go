@@ -43,6 +43,7 @@ func TestSignInGoogleService(t *testing.T) {
 
 			appAccessToken := "app_access_token"
 			expectedRefreshToken := "app_refresh_token"
+			createdUserID := uuid.New()
 
 			oauthService.On("GetAccessToken", code).Return(accessToken, nil).Once()
 			oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
@@ -56,10 +57,10 @@ func TestSignInGoogleService(t *testing.T) {
 
 			userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil).Once()
 			userRepo.On("FindByEmail", mock.Anything, email).Return(nil, nil).Once()
-			userRepo.On("CreateWithIdentity", mock.Anything, mock.AnythingOfType("*domain.User"), mock.AnythingOfType("*domain.FederatedIdentity")).Return(nil).Once()
+			userRepo.On("CreateWithIdentity", mock.Anything, "John", "Doe", email, mock.AnythingOfType("*domain.FederatedIdentity")).Return(createdUserID, nil).Once()
 
 			tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil).Once()
-			refreshTokenRepo.On("GenerateToken", mock.Anything, mock.AnythingOfType("string")).Return(&domain.RefreshToken{Token: expectedRefreshToken}, nil).Once()
+			refreshTokenRepo.On("GenerateToken", mock.Anything, createdUserID.String()).Return(&domain.RefreshToken{Token: expectedRefreshToken}, nil).Once()
 
 			output, err := sut.Execute(context.Background(), port.SignInGoogleInput{Code: code})
 

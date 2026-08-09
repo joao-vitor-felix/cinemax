@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
 
@@ -81,10 +82,10 @@ func (r *PostgresUserRepository) LinkIdentity(ctx context.Context, userID, provi
 	return &fi, nil
 }
 
-func (r *PostgresUserRepository) CreateWithIdentity(ctx context.Context, user *domain.User, identity *domain.FederatedIdentity) error {
+func (r *PostgresUserRepository) CreateWithIdentity(ctx context.Context, firstName, lastName, email string, identity *domain.FederatedIdentity) (uuid.UUID, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 	defer func() {
 		_ = tx.Rollback()
@@ -97,43 +98,42 @@ func (r *PostgresUserRepository) CreateWithIdentity(ctx context.Context, user *d
 			email,
 		)
 		VALUES ($1, $2, $3)
-		RETURNING id, created_at, updated_at
+		RETURNING id
 	`
+	var userID uuid.UUID
 	err = tx.QueryRowContext(
 		ctx,
 		userQuery,
-		user.FirstName,
-		user.LastName,
-		user.Email,
-	).Scan(
-		&user.ID,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
+		firstName,
+		lastName,
+		email,
+	).Scan(&userID)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
-	identity.UserID = user.ID
+	identity.UserID = userID
 
 	identityQuery := `
 		INSERT INTO federated_identities (user_id, provider, provider_user_id)
 		VALUES ($1, $2, $3)
-		RETURNING id, created_at
+		RETURNING id
 	`
+	var identityID uuid.UUID
 	err = tx.QueryRowContext(
 		ctx,
 		identityQuery,
 		identity.UserID,
 		identity.Provider,
 		identity.ProviderUserID,
-	).Scan(
-		&identity.ID,
-		&identity.CreatedAt,
-	)
+	).Scan(&identityID)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return uuid.Nil, err
+	}
+
+	return userID, nil
 }

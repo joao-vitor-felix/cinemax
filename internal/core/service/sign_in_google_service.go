@@ -91,11 +91,17 @@ func (s *SignInGoogleService) resolveUser(ctx context.Context, userInfo *port.Us
 			ProviderUserID: userInfo.ID,
 		}
 
-		if err := s.userRepo.CreateWithIdentity(ctx, newUser, newIdentity); err != nil {
+		userID, err := s.userRepo.CreateWithIdentity(ctx, newUser.FirstName, newUser.LastName, newUser.Email, newIdentity)
+		if err != nil {
 			return nil, err
 		}
 
-		return newUser, nil
+		return &domain.User{
+			ID:        userID,
+			FirstName: newUser.FirstName,
+			LastName:  newUser.LastName,
+			Email:     newUser.Email,
+		}, nil
 	}
 
 	if _, err := s.userRepo.LinkIdentity(ctx, userFromDb.ID.String(), googleProvider, userInfo.ID); err != nil {
