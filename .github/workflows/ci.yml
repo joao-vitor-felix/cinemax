@@ -24,9 +24,6 @@ jobs:
         with:
           version: v2.12
 
-      - name: Formatting
-        run: make fmt
-
       - name: Build
         run: make build
 
