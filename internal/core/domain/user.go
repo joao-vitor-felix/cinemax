@@ -29,9 +29,9 @@ type User struct {
 	FirstName       string
 	LastName        string
 	Email           string
-	Phone           string
-	PasswordHash    string
-	DateOfBirth     string
+	Phone           *string
+	PasswordHash    *string
+	DateOfBirth     *string
 	Gender          Gender
 	ProfilePhotoURL *string
 	CreatedAt       time.Time
@@ -45,7 +45,10 @@ type OAuthUser struct {
 }
 
 func (u *User) IsAgeValid(targetAge int) bool {
-	dob, err := time.Parse("2006-01-02", u.DateOfBirth)
+	if u.DateOfBirth == nil {
+		return false
+	}
+	dob, err := time.Parse("2006-01-02", *u.DateOfBirth)
 	if err != nil {
 		log.Default().Printf("Error parsing date of birth: %v", err)
 		return false
@@ -64,8 +67,8 @@ func NewUser(firstName, lastName, email, phone, dateOfBirth string, gender Gende
 		FirstName:   firstName,
 		LastName:    lastName,
 		Email:       email,
-		Phone:       phone,
-		DateOfBirth: dateOfBirth,
+		Phone:       &phone,
+		DateOfBirth: &dateOfBirth,
 		Gender:      gender,
 	}
 
@@ -81,4 +84,18 @@ func NewOAuthUser(firstName, lastName, email string) *OAuthUser {
 		LastName:  lastName,
 		Email:     email,
 	}
+}
+
+func (u *User) HasPassword() bool {
+	return u.PasswordHash != nil
+}
+
+func (u *User) IsAllowedToBook() bool {
+	if u.DateOfBirth == nil {
+		return false
+	}
+	if _, err := time.Parse("2006-01-02", *u.DateOfBirth); err != nil {
+		return false
+	}
+	return true
 }

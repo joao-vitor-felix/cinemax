@@ -15,20 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type SignInHasherMock struct {
-	mock.Mock
-}
-
-func (h *SignInHasherMock) Hash(password string) (string, error) {
-	args := h.Called(password)
-	return args.String(0), args.Error(1)
-}
-
-func (h *SignInHasherMock) Compare(hash, password string) error {
-	args := h.Called(hash, password)
-	return args.Error(0)
-}
-
 type TokenIssuerMock struct {
 	mock.Mock
 }
@@ -49,12 +35,12 @@ func (t *TokenIssuerMock) Validate(token string) (*port.AccessTokenPayload, erro
 func setupSignInSut() (
 	port.SignInService,
 	*m.UserRepositoryMock,
-	*SignInHasherMock,
+	*HasherMock,
 	*TokenIssuerMock,
 	*m.RefreshTokenRepositoryMock,
 ) {
 	userRepo := new(m.UserRepositoryMock)
-	hasher := new(SignInHasherMock)
+	hasher := new(HasherMock)
 	tokenIssuer := new(TokenIssuerMock)
 	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
 	sut := service.NewSignInService(userRepo, hasher, tokenIssuer, refreshTokenRepo)
@@ -68,10 +54,11 @@ func TestSignInService(t *testing.T) {
 	}
 
 	userID := uuid.New()
+	passwordHash := "hashed_password"
 	mockUser := &domain.User{
 		ID:           userID,
 		Email:        input.Email,
-		PasswordHash: "hashed_password",
+		PasswordHash: &passwordHash,
 	}
 
 	t.Run("Execute", func(t *testing.T) {

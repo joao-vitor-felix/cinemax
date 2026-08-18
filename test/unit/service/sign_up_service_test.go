@@ -24,7 +24,7 @@ func (h *HasherMock) Hash(password string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (h *HasherMock) Compare(hash, password string) error {
+func (h *HasherMock) Compare(hash *string, password string) error {
 	args := h.Called(hash, password)
 	return args.Error(0)
 }
@@ -59,18 +59,18 @@ func TestSignUpService(t *testing.T) {
 				require.Equal(t, input.FirstName, arg.FirstName)
 				require.Equal(t, input.LastName, arg.LastName)
 				require.Equal(t, input.Email, arg.Email)
-				require.Equal(t, input.Phone, arg.Phone)
-				require.Equal(t, input.DateOfBirth, arg.DateOfBirth)
+				require.Equal(t, input.Phone, *arg.Phone)
+				require.Equal(t, input.DateOfBirth, *arg.DateOfBirth)
 				require.Equal(t, input.Gender, arg.Gender)
-				require.Equal(t, expectedHash, arg.PasswordHash)
+				require.Equal(t, expectedHash, *arg.PasswordHash)
 			}).Return(&domain.User{
 				ID:              uuid.New(),
 				FirstName:       input.FirstName,
 				LastName:        input.LastName,
 				Email:           input.Email,
-				Phone:           input.Phone,
-				PasswordHash:    expectedHash,
-				DateOfBirth:     input.DateOfBirth,
+				Phone:           &input.Phone,
+				PasswordHash:    &expectedHash,
+				DateOfBirth:     &input.DateOfBirth,
 				Gender:          input.Gender,
 				ProfilePhotoURL: nil,
 				CreatedAt:       time.Now(),
@@ -84,10 +84,10 @@ func TestSignUpService(t *testing.T) {
 			require.Equal(t, input.FirstName, user.FirstName)
 			require.Equal(t, input.LastName, user.LastName)
 			require.Equal(t, input.Email, user.Email)
-			require.Equal(t, input.Phone, user.Phone)
-			require.Equal(t, input.DateOfBirth, user.DateOfBirth)
+			require.Equal(t, input.Phone, *user.Phone)
+			require.Equal(t, input.DateOfBirth, *user.DateOfBirth)
 			require.Equal(t, input.Gender, user.Gender)
-			require.Equal(t, expectedHash, user.PasswordHash)
+			require.Equal(t, expectedHash, *user.PasswordHash)
 
 			repoMock.AssertExpectations(t)
 			hasherMock.AssertExpectations(t)

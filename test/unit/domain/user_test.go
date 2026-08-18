@@ -29,8 +29,8 @@ func TestUserEntity(t *testing.T) {
 		require.Equal(t, firstName, user.FirstName)
 		require.Equal(t, lastName, user.LastName)
 		require.Equal(t, email, user.Email)
-		require.Equal(t, phone, user.Phone)
+		require.Equal(t, phone, *user.Phone)
 		require.Equal(t, gender, user.Gender)
-		require.Equal(t, dateOfBirth, user.DateOfBirth)
+		require.Equal(t, dateOfBirth, *user.DateOfBirth)
 	})
 }
