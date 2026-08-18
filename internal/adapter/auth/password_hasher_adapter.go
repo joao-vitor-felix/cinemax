@@ -17,7 +17,7 @@ func (h *PasswordHasherAdapter) Hash(password string) (string, error) {
 	return string(hash), nil
 }
 
-func (h *PasswordHasherAdapter) Compare(hash, password string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+func (h *PasswordHasherAdapter) Compare(hash *string, password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(*hash), []byte(password))
 	return err
 }

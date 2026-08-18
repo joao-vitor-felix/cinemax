@@ -5,14 +5,10 @@ run:
 	go run cmd/api/main.go -migrate
 
 fmt:
-	go fmt ./...
+	golangci-lint fmt
 
 lint:
 	golangci-lint run
-
-code-quality:
-	make fmt
-	make lint
 
 tidy:
 	go mod tidy

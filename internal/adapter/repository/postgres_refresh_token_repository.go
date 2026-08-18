@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log/slog"
@@ -20,7 +21,7 @@ func NewPostgresRefreshTokenRepository(db *sql.DB) *PostgresRefreshTokenReposito
 	return &PostgresRefreshTokenRepository{db}
 }
 
-func (r *PostgresRefreshTokenRepository) GetByToken(token string) (*domain.RefreshToken, error) {
+func (r *PostgresRefreshTokenRepository) GetByToken(ctx context.Context, token string) (*domain.RefreshToken, error) {
 	query := `
 	SELECT
 		token,
@@ -33,7 +34,7 @@ func (r *PostgresRefreshTokenRepository) GetByToken(token string) (*domain.Refre
 	`
 
 	var t domain.RefreshToken
-	err := r.db.QueryRow(query, token).Scan(
+	err := r.db.QueryRowContext(ctx, query, token).Scan(
 		&t.Token,
 		&t.UserID,
 		&t.ExpiresAt,
@@ -52,7 +53,7 @@ func (r *PostgresRefreshTokenRepository) GetByToken(token string) (*domain.Refre
 	return &t, nil
 }
 
-func (r *PostgresRefreshTokenRepository) GenerateToken(userId string) (*domain.RefreshToken, error) {
+func (r *PostgresRefreshTokenRepository) GenerateToken(ctx context.Context, userId string) (*domain.RefreshToken, error) {
 	tokenUUID := uuid.New().String()
 	expiresAt := time.Now().Add(tokenExpiration)
 
@@ -73,7 +74,7 @@ func (r *PostgresRefreshTokenRepository) GenerateToken(userId string) (*domain.R
 			created_at
 	`
 	var t domain.RefreshToken
-	err := r.db.QueryRow(query, tokenUUID, userId, expiresAt).Scan(
+	err := r.db.QueryRowContext(ctx, query, tokenUUID, userId, expiresAt).Scan(
 		&t.Token,
 		&t.UserID,
 		&t.ExpiresAt,
@@ -88,8 +89,8 @@ func (r *PostgresRefreshTokenRepository) GenerateToken(userId string) (*domain.R
 	return &t, nil
 }
 
-func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(token, userId string) (*domain.RefreshToken, error) {
-	tx, err := r.db.Begin()
+func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(ctx context.Context, token, userId string) (*domain.RefreshToken, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +110,7 @@ func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(token, u
 		AND
 			user_id = $2
 	`
-	_, err = tx.Exec(updateQuery, token, userId)
+	_, err = tx.ExecContext(ctx, updateQuery, token, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(token, u
 			created_at
 	`
 	var newToken domain.RefreshToken
-	err = tx.QueryRow(insertQuery, newTokenUUID, userId, expiresAt).Scan(
+	err = tx.QueryRowContext(ctx, insertQuery, newTokenUUID, userId, expiresAt).Scan(
 		&newToken.Token,
 		&newToken.UserID,
 		&newToken.ExpiresAt,
@@ -153,24 +154,24 @@ func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(token, u
 	return &newToken, nil
 }
 
-func (r *PostgresRefreshTokenRepository) DeleteToken(token string) error {
+func (r *PostgresRefreshTokenRepository) DeleteToken(ctx context.Context, token string) error {
 	query := `
 		DELETE FROM
 			refresh_tokens
 		WHERE
 			token = $1
 	`
-	_, err := r.db.Exec(query, token)
+	_, err := r.db.ExecContext(ctx, query, token)
 	return err
 }
 
-func (r *PostgresRefreshTokenRepository) DeleteTokensByUserID(userId string) error {
+func (r *PostgresRefreshTokenRepository) DeleteTokensByUserID(ctx context.Context, userId string) error {
 	query := `
 		DELETE FROM
 			refresh_tokens
 		WHERE
 			user_id = $1
 	`
-	_, err := r.db.Exec(query, userId)
+	_, err := r.db.ExecContext(ctx, query, userId)
 	return err
 }

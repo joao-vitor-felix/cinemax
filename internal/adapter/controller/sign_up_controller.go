@@ -41,7 +41,7 @@ func (c *SignUpController) Execute(w http.ResponseWriter, r *http.Request) (Resp
 		return Response{}, err
 	}
 
-	_, err := c.service.Execute(body)
+	_, err := c.service.Execute(r.Context(), body)
 	if err != nil {
 		return Response{}, err
 	}

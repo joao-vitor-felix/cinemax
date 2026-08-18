@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,8 +18,8 @@ type RefreshTokenServiceMock struct {
 	mock.Mock
 }
 
-func (s *RefreshTokenServiceMock) Execute(input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
-	args := s.Called(input)
+func (s *RefreshTokenServiceMock) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
+	args := s.Called(ctx, input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -46,7 +47,7 @@ func TestRefreshTokenController(t *testing.T) {
 				RefreshToken: "new_refresh_token",
 			}
 
-			service.On("Execute", input).Return(output, nil).Once()
+			service.On("Execute", mock.Anything, input).Return(output, nil).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
@@ -67,7 +68,7 @@ func TestRefreshTokenController(t *testing.T) {
 				RefreshToken: "invalid_refresh_token",
 			}
 
-			service.On("Execute", input).Return(nil, domain.InvalidCredentialsError).Once()
+			service.On("Execute", mock.Anything, input).Return(nil, domain.InvalidCredentialsError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()

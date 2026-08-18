@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,8 +18,8 @@ type SignInService struct {
 	mock.Mock
 }
 
-func (s *SignInService) Execute(input port.SignInInput) (*port.SignInOutput, error) {
-	args := s.Called(input)
+func (s *SignInService) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
+	args := s.Called(ctx, input)
 	return args.Get(0).(*port.SignInOutput), args.Error(1)
 }
 
@@ -44,7 +45,7 @@ func TestSignInController(t *testing.T) {
 				RefreshToken: "refresh_token_123",
 			}
 
-			service.On("Execute", input).Return(output, nil).Once()
+			service.On("Execute", mock.Anything, input).Return(output, nil).Once()
 
 			//TODO: make a helper function to make requests in controller tests
 			r := test.MakeRequest(http.MethodPost, url, input)
@@ -67,7 +68,7 @@ func TestSignInController(t *testing.T) {
 				Password: "12345678",
 			}
 
-			service.On("Execute", input).Return(&port.SignInOutput{}, domain.InvalidCredentialsError).Once()
+			service.On("Execute", mock.Anything, input).Return(&port.SignInOutput{}, domain.InvalidCredentialsError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()

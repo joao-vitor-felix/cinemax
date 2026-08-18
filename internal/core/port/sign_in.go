@@ -1,5 +1,7 @@
 package port
 
+import "context"
+
 type SignInInput struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=8,max=12"`
@@ -11,5 +13,5 @@ type SignInOutput struct {
 }
 
 type SignInService interface {
-	Execute(input SignInInput) (*SignInOutput, error)
+	Execute(ctx context.Context, input SignInInput) (*SignInOutput, error)
 }

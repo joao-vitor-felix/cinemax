@@ -131,6 +131,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/sign-in/google": {
+            "post": {
+                "description": "Authenticate a user using a Google OAuth code and return access and refresh tokens.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign in a user with Google OAuth",
+                "parameters": [
+                    {
+                        "description": "Google OAuth authorization code",
+                        "name": "code",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/port.SignInGoogleInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User authenticated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/controller.Resource-port_SignInOutput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (invalid body or validation error)",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (invalid or expired code, email not verified)",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/sign-up": {
             "post": {
                 "description": "Register a new user with the provided information.",
@@ -260,6 +312,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "port.SignInGoogleInput": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
                     "type": "string"
                 }
             }

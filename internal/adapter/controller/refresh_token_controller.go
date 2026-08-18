@@ -43,7 +43,7 @@ func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request)
 		return Response{}, err
 	}
 
-	output, err := c.service.Execute(input)
+	output, err := c.service.Execute(r.Context(), input)
 	if err != nil {
 		return Response{}, err
 	}

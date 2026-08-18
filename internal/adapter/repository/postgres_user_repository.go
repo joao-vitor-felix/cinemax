@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
@@ -14,7 +15,7 @@ func NewPostgresUserRepository(db *sql.DB) *PostgresUserRepository {
 	return &PostgresUserRepository{db}
 }
 
-func (r *PostgresUserRepository) Create(user *domain.User) (*domain.User, error) {
+func (r *PostgresUserRepository) Create(ctx context.Context, user *domain.User) (*domain.User, error) {
 	query := `
 		INSERT INTO users (
 			first_name,
@@ -29,7 +30,8 @@ func (r *PostgresUserRepository) Create(user *domain.User) (*domain.User, error)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		RETURNING id, created_at, updated_at
 	`
-	err := r.db.QueryRow(
+	err := r.db.QueryRowContext(
+		ctx,
 		query,
 		user.FirstName,
 		user.LastName,
@@ -50,7 +52,7 @@ func (r *PostgresUserRepository) Create(user *domain.User) (*domain.User, error)
 	return user, nil
 }
 
-func (r *PostgresUserRepository) IsContactInfoAvailable(email, phone string) (bool, error) {
+func (r *PostgresUserRepository) IsContactInfoAvailable(ctx context.Context, email, phone string) (bool, error) {
 	query := `
 		SELECT EXISTS (
 			SELECT 1
@@ -59,14 +61,14 @@ func (r *PostgresUserRepository) IsContactInfoAvailable(email, phone string) (bo
 		)
 	`
 	var exists bool
-	err := r.db.QueryRow(query, email, phone).Scan(&exists)
+	err := r.db.QueryRowContext(ctx, query, email, phone).Scan(&exists)
 	if err != nil {
 		return false, err
 	}
 	return !exists, nil
 }
 
-func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error) {
+func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
 		SELECT
 			id,
@@ -84,7 +86,7 @@ func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error)
 		WHERE email = $1
 	`
 	var user domain.User
-	err := r.db.QueryRow(query, email).Scan(
+	err := r.db.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
 		&user.FirstName,
 		&user.LastName,
@@ -108,7 +110,7 @@ func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error)
 	return &user, nil
 }
 
-func (r *PostgresUserRepository) FindByID(id string) (*domain.User, error) {
+func (r *PostgresUserRepository) FindByID(ctx context.Context, id string) (*domain.User, error) {
 	query := `
 		SELECT
 			id,
@@ -126,7 +128,7 @@ func (r *PostgresUserRepository) FindByID(id string) (*domain.User, error) {
 		WHERE id = $1
 	`
 	var user domain.User
-	err := r.db.QueryRow(query, id).Scan(
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&user.ID,
 		&user.FirstName,
 		&user.LastName,

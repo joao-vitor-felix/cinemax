@@ -16,17 +16,16 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Install golangci-lint
-        run: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.7.2
-
       - name: Install dependencies
         run: make tidy
 
+      - name: Linting
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12
+
       - name: Build
         run: make build
-
-      - name: Linting
-        run: make lint
 
       - name: Testing
         run: make test

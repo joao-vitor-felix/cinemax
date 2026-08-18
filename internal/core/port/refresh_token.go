@@ -1,13 +1,17 @@
 package port
 
-import "github.com/joao-vitor-felix/cinemax/internal/core/domain"
+import (
+	"context"
+
+	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
+)
 
 type RefreshTokenRepository interface {
-	GetByToken(token string) (*domain.RefreshToken, error)
-	GenerateToken(userId string) (*domain.RefreshToken, error)
-	GenerateAndInvalidateUsedToken(token, userId string) (*domain.RefreshToken, error)
-	DeleteToken(token string) error
-	DeleteTokensByUserID(userId string) error
+	GetByToken(ctx context.Context, token string) (*domain.RefreshToken, error)
+	GenerateToken(ctx context.Context, userId string) (*domain.RefreshToken, error)
+	GenerateAndInvalidateUsedToken(ctx context.Context, token, userId string) (*domain.RefreshToken, error)
+	DeleteToken(ctx context.Context, token string) error
+	DeleteTokensByUserID(ctx context.Context, userId string) error
 }
 
 type RefreshTokenInput struct {
@@ -20,5 +24,5 @@ type RefreshTokenOutput struct {
 }
 
 type RefreshTokenService interface {
-	Execute(input RefreshTokenInput) (*RefreshTokenOutput, error)
+	Execute(ctx context.Context, input RefreshTokenInput) (*RefreshTokenOutput, error)
 }

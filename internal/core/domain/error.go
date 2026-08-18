@@ -80,4 +80,10 @@ var (
 		"invalid credentials",
 		http.StatusUnauthorized,
 	)
+
+	EmailNotVerifiedError = NewAppError(
+		"EMAIL_NOT_VERIFIED",
+		"email is not verified with the provider",
+		http.StatusUnauthorized,
+	)
 )

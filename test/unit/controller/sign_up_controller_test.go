@@ -1,6 +1,7 @@
 package controller_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,8 +18,8 @@ type SignUpService struct {
 	mock.Mock
 }
 
-func (s *SignUpService) Execute(input port.SignUpInput) (*domain.User, error) {
-	args := s.Called(input)
+func (s *SignUpService) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
+	args := s.Called(ctx, input)
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
@@ -44,7 +45,7 @@ func TestSignUpController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Execute", input).Return(&domain.User{}, nil).Once()
+			service.On("Execute", mock.Anything, input).Return(&domain.User{}, nil).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
@@ -69,7 +70,7 @@ func TestSignUpController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Execute", input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
+			service.On("Execute", mock.Anything, input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()

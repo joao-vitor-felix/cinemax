@@ -59,6 +59,13 @@ definitions:
       refresh_token:
         type: string
     type: object
+  port.SignInGoogleInput:
+    properties:
+      code:
+        type: string
+    required:
+    - code
+    type: object
   port.SignInInput:
     properties:
       email:
@@ -189,6 +196,41 @@ paths:
           schema:
             $ref: '#/definitions/controller.ErrorResponse'
       summary: Sign in a user
+      tags:
+      - Auth
+  /auth/sign-in/google:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user using a Google OAuth code and return access
+        and refresh tokens.
+      parameters:
+      - description: Google OAuth authorization code
+        in: body
+        name: code
+        required: true
+        schema:
+          $ref: '#/definitions/port.SignInGoogleInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User authenticated successfully
+          schema:
+            $ref: '#/definitions/controller.Resource-port_SignInOutput'
+        "400":
+          description: Bad request (invalid body or validation error)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "401":
+          description: Unauthorized (invalid or expired code, email not verified)
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Sign in a user with Google OAuth
       tags:
       - Auth
   /auth/sign-up:

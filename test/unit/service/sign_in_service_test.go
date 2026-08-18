@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -13,20 +14,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
-
-type SignInHasherMock struct {
-	mock.Mock
-}
-
-func (h *SignInHasherMock) Hash(password string) (string, error) {
-	args := h.Called(password)
-	return args.String(0), args.Error(1)
-}
-
-func (h *SignInHasherMock) Compare(hash, password string) error {
-	args := h.Called(hash, password)
-	return args.Error(0)
-}
 
 type TokenIssuerMock struct {
 	mock.Mock
@@ -48,12 +35,12 @@ func (t *TokenIssuerMock) Validate(token string) (*port.AccessTokenPayload, erro
 func setupSignInSut() (
 	port.SignInService,
 	*m.UserRepositoryMock,
-	*SignInHasherMock,
+	*HasherMock,
 	*TokenIssuerMock,
 	*m.RefreshTokenRepositoryMock,
 ) {
 	userRepo := new(m.UserRepositoryMock)
-	hasher := new(SignInHasherMock)
+	hasher := new(HasherMock)
 	tokenIssuer := new(TokenIssuerMock)
 	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
 	sut := service.NewSignInService(userRepo, hasher, tokenIssuer, refreshTokenRepo)
@@ -67,10 +54,11 @@ func TestSignInService(t *testing.T) {
 	}
 
 	userID := uuid.New()
+	passwordHash := "hashed_password"
 	mockUser := &domain.User{
 		ID:           userID,
 		Email:        input.Email,
-		PasswordHash: "hashed_password",
+		PasswordHash: &passwordHash,
 	}
 
 	t.Run("Execute", func(t *testing.T) {
@@ -80,7 +68,7 @@ func TestSignInService(t *testing.T) {
 			expectedAccessToken := "access_token"
 			expectedRefreshToken := "refresh_token"
 
-			userRepo.On("FindByEmail", input.Email).Return(mockUser, nil).Once()
+			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
 				ID:    userID.String(),
@@ -92,9 +80,9 @@ func TestSignInService(t *testing.T) {
 				UserID:    userID.String(),
 				ExpiresAt: time.Now().Add(time.Hour * 24),
 			}
-			refreshTokenRepo.On("GenerateToken", userID.String()).Return(rt, nil).Once()
+			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(rt, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.NoError(t, err)
 			require.NotNil(t, output)
@@ -110,9 +98,9 @@ func TestSignInService(t *testing.T) {
 		t.Run("should return error when user is not found", func(t *testing.T) {
 			sut, userRepo, hasher, tokenIssuer, refreshTokenRepo := setupSignInSut()
 
-			userRepo.On("FindByEmail", input.Email).Return(nil, nil).Once()
+			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(nil, nil).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, domain.InvalidCredentialsError)
 			require.Nil(t, output)
@@ -126,10 +114,10 @@ func TestSignInService(t *testing.T) {
 		t.Run("should return error when password does not match", func(t *testing.T) {
 			sut, userRepo, hasher, tokenIssuer, refreshTokenRepo := setupSignInSut()
 
-			userRepo.On("FindByEmail", input.Email).Return(mockUser, nil).Once()
+			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(errors.New("invalid password")).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, domain.InvalidCredentialsError)
 			require.Nil(t, output)
@@ -145,11 +133,11 @@ func TestSignInService(t *testing.T) {
 
 			expectedErr := errors.New("token generation failed")
 
-			userRepo.On("FindByEmail", input.Email).Return(mockUser, nil).Once()
+			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("", expectedErr).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, expectedErr)
 			require.Nil(t, output)
@@ -165,12 +153,12 @@ func TestSignInService(t *testing.T) {
 
 			expectedErr := errors.New("refresh token generation failed")
 
-			userRepo.On("FindByEmail", input.Email).Return(mockUser, nil).Once()
+			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("access_token", nil).Once()
-			refreshTokenRepo.On("GenerateToken", userID.String()).Return(nil, expectedErr).Once()
+			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(nil, expectedErr).Once()
 
-			output, err := sut.Execute(input)
+			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, expectedErr)
 			require.Nil(t, output)
