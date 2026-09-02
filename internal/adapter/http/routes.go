@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	_ "github.com/joao-vitor-felix/cinemax/docs"
-	m "github.com/joao-vitor-felix/cinemax/internal/adapter/http/middleware"
 	"github.com/joao-vitor-felix/cinemax/internal/factory"
 	httpSwagger "github.com/swaggo/http-swagger"
 )

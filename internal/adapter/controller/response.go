@@ -10,11 +10,7 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
 
-// TODO: delete me
-type Response struct {
-	Data   any
-	Status int
-}
+
 
 type ErrorResponse struct {
 	Code    string `json:"code"`
