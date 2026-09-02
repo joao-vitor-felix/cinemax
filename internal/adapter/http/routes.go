@@ -43,7 +43,7 @@ func SetupRoutes(container *factory.Container) http.Handler {
 		r.Post("/sign-up", container.SignUpController.Execute)
 		r.Post("/sign-in", container.SignInController.Execute)
 		r.Post("/sign-in/google", container.SignInWithGoogleController.Execute)
-		r.Post("/refresh-token", m.MakeHandler(container.RefreshTokenController.Execute))
+		r.Post("/refresh-token", container.RefreshTokenController.Execute)
 	})
 	return r
 }

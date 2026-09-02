@@ -52,11 +52,12 @@ func TestRefreshTokenController(t *testing.T) {
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			res, err := sut.Execute(w, r)
+			sut.Execute(w, r)
 
-			require.NoError(t, err)
-			require.Equal(t, http.StatusOK, res.Status)
-			require.Equal(t, output, res.Data.(*controller.Resource[*port.RefreshTokenOutput]).Data)
+			require.Equal(t, http.StatusOK, w.Code)
+			var res controller.Resource[*port.RefreshTokenOutput]
+			_ = controller.DecodeJSON(w.Body, &res)
+			require.Equal(t, output, res.Data)
 
 			service.AssertExpectations(t)
 		})
@@ -73,10 +74,13 @@ func TestRefreshTokenController(t *testing.T) {
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			_, err := sut.Execute(w, r)
+			sut.Execute(w, r)
 
-			require.Error(t, err)
-			require.Equal(t, domain.InvalidCredentialsError, err)
+			require.Equal(t, domain.InvalidCredentialsError.StatusCode, w.Code)
+			var body controller.ErrorResponse
+			_ = controller.DecodeJSON(w.Body, &body)
+			require.Equal(t, domain.InvalidCredentialsError.Code, body.Code)
+			require.Equal(t, domain.InvalidCredentialsError.Message, body.Message)
 
 			service.AssertExpectations(t)
 		})
@@ -102,13 +106,13 @@ func TestRefreshTokenController(t *testing.T) {
 				r := test.MakeRequest(http.MethodPost, url, tt.body)
 				w := httptest.NewRecorder()
 
-				_, err := sut.Execute(w, r)
-				require.Error(t, err)
-				var appErr *domain.AppError
-				require.ErrorAs(t, err, &appErr)
-				require.Equal(t, http.StatusBadRequest, appErr.StatusCode)
-				require.Equal(t, "VALIDATION_ERROR", appErr.Code)
-				require.Regexp(t, tt.expectedError, appErr.Message)
+				sut.Execute(w, r)
+				
+				require.Equal(t, http.StatusBadRequest, w.Code)
+				var body controller.ErrorResponse
+				_ = controller.DecodeJSON(w.Body, &body)
+				require.Equal(t, "VALIDATION_ERROR", body.Code)
+				require.Regexp(t, tt.expectedError, body.Message)
 			})
 		}
 	})
