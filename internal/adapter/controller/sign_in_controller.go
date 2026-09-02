@@ -55,13 +55,5 @@ func (c *SignInController) Execute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSON(w, http.StatusOK, NewResource(
-		output,
-		map[string]Link{
-			"refresh-token": {
-				Href:   "/auth/refresh-token",
-				Method: "POST",
-			},
-		},
-	))
+	WriteJSON(w, http.StatusOK, output)
 }

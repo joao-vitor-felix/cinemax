@@ -56,8 +56,5 @@ func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	WriteJSON(w, http.StatusOK, NewResource(
-		output,
-		nil,
-	))
+	WriteJSON(w, http.StatusOK, output)
 }

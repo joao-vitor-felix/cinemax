@@ -55,9 +55,9 @@ func TestRefreshTokenController(t *testing.T) {
 			sut.Execute(w, r)
 
 			require.Equal(t, http.StatusOK, w.Code)
-			var res controller.Resource[*port.RefreshTokenOutput]
+			var res port.RefreshTokenOutput
 			_ = controller.DecodeJSON(w.Body, &res)
-			require.Equal(t, output, res.Data)
+			require.Equal(t, *output, res)
 
 			service.AssertExpectations(t)
 		})
