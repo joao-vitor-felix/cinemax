@@ -21,11 +21,16 @@ func WriteJSON(w http.ResponseWriter, status int, d any) {
 		w.WriteHeader(status)
 		return
 	}
-	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(d); err != nil {
 		slog.Error("failed to encode json", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(ErrorResponse{
+			Code:    domain.InternalServerError.Code,
+			Message: domain.InternalServerError.Message,
+		})
+		return
 	}
+	w.WriteHeader(status)
 }
 
 func DecodeJSON(r io.Reader, v any) error {
