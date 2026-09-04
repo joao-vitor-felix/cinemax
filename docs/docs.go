@@ -107,7 +107,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User authenticated successfully",
                         "schema": {
-                            "$ref": "#/definitions/controller.Resource-port_SignInOutput"
+                            "$ref": "#/definitions/port.SignInOutput"
                         }
                     },
                     "400": {
@@ -159,7 +159,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User authenticated successfully",
                         "schema": {
-                            "$ref": "#/definitions/controller.Resource-port_SignInOutput"
+                            "$ref": "#/definitions/port.SignInOutput"
                         }
                     },
                     "400": {
@@ -209,10 +209,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "User registered successfully",
-                        "schema": {
-                            "$ref": "#/definitions/controller.Resource-any"
-                        }
+                        "description": "User registered successfully"
                     },
                     "400": {
                         "description": "Bad request",
@@ -239,43 +236,6 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
-                }
-            }
-        },
-        "controller.Link": {
-            "type": "object",
-            "properties": {
-                "href": {
-                    "type": "string"
-                },
-                "method": {
-                    "type": "string"
-                }
-            }
-        },
-        "controller.Resource-any": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "links": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/controller.Link"
-                    }
-                }
-            }
-        },
-        "controller.Resource-port_SignInOutput": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/port.SignInOutput"
-                },
-                "links": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "$ref": "#/definitions/controller.Link"
-                    }
                 }
             }
         },

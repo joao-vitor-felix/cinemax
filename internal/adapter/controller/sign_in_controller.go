@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
 
@@ -25,38 +24,35 @@ func NewSignInController(service port.SignInService) *SignInController {
 //	@Accept			json
 //	@Produce		json
 //	@Param			credentials	body		port.SignInInput	true	"User credentials"
-//	@Success		200			{object}	Resource[port.SignInOutput]	"User authenticated successfully"
+//	@Success		200			{object}	port.SignInOutput	"User authenticated successfully"
 //	@Failure		400			{object}	ErrorResponse		"Bad request (invalid body or validation error)"
 //	@Failure		401			{object}	ErrorResponse		"Unauthorized (invalid credentials)"
 //	@Failure		500			{object}	ErrorResponse		"Internal server error"
 //	@Router			/auth/sign-in [post]
-func (c *SignInController) Execute(w http.ResponseWriter, r *http.Request) (Response, error) {
+func (c *SignInController) Execute(w http.ResponseWriter, r *http.Request) {
 	var body port.SignInInput
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	if err := DecodeJSON(r.Body, &body); err != nil {
 		slog.Error("failed to decode request body", "error", err)
-		return Response{}, domain.InvalidBodyError
+		WriteError(
+			w,
+			http.StatusBadRequest,
+			domain.InvalidBodyError.Code,
+			domain.InvalidBodyError.Message,
+		)
+		return
 	}
 
 	if err := ValidateStruct(body); err != nil {
 		slog.Error("validation error", "error", err)
-		return Response{}, err
+		HandleError(w, err)
+		return
 	}
 	output, err := c.service.Execute(r.Context(), body)
 
 	if err != nil {
-		return Response{}, err
+		HandleError(w, err)
+		return
 	}
 
-	return Response{
-		Data: NewResource(
-			output,
-			map[string]Link{
-				"refresh-token": {
-					Href:   "/auth/refresh-token",
-					Method: "POST",
-				},
-			},
-		),
-		Status: http.StatusOK,
-	}, nil
+	WriteJSON(w, http.StatusOK, output)
 }

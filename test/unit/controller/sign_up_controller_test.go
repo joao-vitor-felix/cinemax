@@ -50,11 +50,9 @@ func TestSignUpController(t *testing.T) {
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			res, err := sut.Execute(w, r)
+			sut.Execute(w, r)
 
-			require.NoError(t, err)
-			require.Equal(t, http.StatusCreated, res.Status)
-			require.Equal(t, nil, res.Data.(*controller.Resource[any]).Data)
+			require.Equal(t, http.StatusCreated, w.Code)
 			service.AssertExpectations(t)
 		})
 
@@ -75,10 +73,13 @@ func TestSignUpController(t *testing.T) {
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
 
-			_, err := sut.Execute(w, r)
+			sut.Execute(w, r)
 
-			require.Error(t, err)
-			require.Equal(t, domain.ContactInfoUnavailableError, err)
+			require.Equal(t, domain.ContactInfoUnavailableError.StatusCode, w.Code)
+			var body controller.ErrorResponse
+			require.NoError(t, controller.DecodeJSON(w.Body, &body))
+			require.Equal(t, domain.ContactInfoUnavailableError.Code, body.Code)
+			require.Equal(t, domain.ContactInfoUnavailableError.Message, body.Message)
 			service.AssertExpectations(t)
 		})
 
@@ -278,14 +279,13 @@ func TestSignUpController(t *testing.T) {
 				r := test.MakeRequest(http.MethodPost, url, tt.body)
 				w := httptest.NewRecorder()
 
-				_, err := sut.Execute(w, r)
+				sut.Execute(w, r)
 
-				require.Error(t, err)
-				var appErr *domain.AppError
-				require.ErrorAs(t, err, &appErr)
-				require.Equal(t, http.StatusBadRequest, appErr.StatusCode)
-				require.Equal(t, "VALIDATION_ERROR", appErr.Code)
-				require.Regexp(t, tt.expectedError, appErr.Message)
+				require.Equal(t, http.StatusBadRequest, w.Code)
+				var body controller.ErrorResponse
+				require.NoError(t, controller.DecodeJSON(w.Body, &body))
+				require.Equal(t, "VALIDATION_ERROR", body.Code)
+				require.Regexp(t, tt.expectedError, body.Message)
 			})
 		}
 	})

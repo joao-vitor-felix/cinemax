@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	_ "github.com/joao-vitor-felix/cinemax/docs"
-	m "github.com/joao-vitor-felix/cinemax/internal/adapter/http/middleware"
 	"github.com/joao-vitor-felix/cinemax/internal/factory"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -40,10 +39,10 @@ func SetupRoutes(container *factory.Container) http.Handler {
 		httpSwagger.URL("http://localhost:8080/docs/doc.json"),
 	))
 	r.Route("/auth", func(r chi.Router) {
-		r.Post("/sign-up", m.MakeHandler(container.SignUpController.Execute))
-		r.Post("/sign-in", m.MakeHandler(container.SignInController.Execute))
-		r.Post("/sign-in/google", m.MakeHandler(container.SignInWithGoogleController.Execute))
-		r.Post("/refresh-token", m.MakeHandler(container.RefreshTokenController.Execute))
+		r.Post("/sign-up", container.SignUpController.Execute)
+		r.Post("/sign-in", container.SignInController.Execute)
+		r.Post("/sign-in/google", container.SignInWithGoogleController.Execute)
+		r.Post("/refresh-token", container.RefreshTokenController.Execute)
 	})
 	return r
 }
