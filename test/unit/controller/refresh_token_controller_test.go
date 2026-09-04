@@ -56,7 +56,7 @@ func TestRefreshTokenController(t *testing.T) {
 
 			require.Equal(t, http.StatusOK, w.Code)
 			var res port.RefreshTokenOutput
-			_ = controller.DecodeJSON(w.Body, &res)
+			require.NoError(t, controller.DecodeJSON(w.Body, &res))
 			require.Equal(t, *output, res)
 
 			service.AssertExpectations(t)
@@ -78,7 +78,7 @@ func TestRefreshTokenController(t *testing.T) {
 
 			require.Equal(t, domain.InvalidCredentialsError.StatusCode, w.Code)
 			var body controller.ErrorResponse
-			_ = controller.DecodeJSON(w.Body, &body)
+			require.NoError(t, controller.DecodeJSON(w.Body, &body))
 			require.Equal(t, domain.InvalidCredentialsError.Code, body.Code)
 			require.Equal(t, domain.InvalidCredentialsError.Message, body.Message)
 
@@ -110,7 +110,7 @@ func TestRefreshTokenController(t *testing.T) {
 				
 				require.Equal(t, http.StatusBadRequest, w.Code)
 				var body controller.ErrorResponse
-				_ = controller.DecodeJSON(w.Body, &body)
+				require.NoError(t, controller.DecodeJSON(w.Body, &body))
 				require.Equal(t, "VALIDATION_ERROR", body.Code)
 				require.Regexp(t, tt.expectedError, body.Message)
 			})

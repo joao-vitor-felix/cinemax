@@ -24,7 +24,7 @@ func NewSignInController(service port.SignInService) *SignInController {
 //	@Accept			json
 //	@Produce		json
 //	@Param			credentials	body		port.SignInInput	true	"User credentials"
-//	@Success		200			{object}	Resource[port.SignInOutput]	"User authenticated successfully"
+//	@Success		200			{object}	port.SignInOutput	"User authenticated successfully"
 //	@Failure		400			{object}	ErrorResponse		"Bad request (invalid body or validation error)"
 //	@Failure		401			{object}	ErrorResponse		"Unauthorized (invalid credentials)"
 //	@Failure		500			{object}	ErrorResponse		"Internal server error"
@@ -44,8 +44,7 @@ func (c *SignInController) Execute(w http.ResponseWriter, r *http.Request) {
 
 	if err := ValidateStruct(body); err != nil {
 		slog.Error("validation error", "error", err)
-		e := domain.ValidationError(err.Error())
-		WriteError(w, http.StatusBadRequest, e.Code, e.Message)
+		HandleError(w, err)
 		return
 	}
 	output, err := c.service.Execute(r.Context(), body)

@@ -10,8 +10,6 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
 
-
-
 type ErrorResponse struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -19,8 +17,15 @@ type ErrorResponse struct {
 
 func WriteJSON(w http.ResponseWriter, status int, d any) {
 	w.Header().Set("Content-Type", "application/json")
+	if d == nil {
+		w.WriteHeader(status)
+		return
+	}
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(d)
+	if err := json.NewEncoder(w).Encode(d); err != nil {
+		slog.Error("failed to encode json", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
 
 func DecodeJSON(r io.Reader, v any) error {
@@ -41,6 +46,7 @@ func HandleError(w http.ResponseWriter, err error) {
 		WriteError(w, appErr.StatusCode, appErr.Code, appErr.Message)
 		return
 	}
+	slog.Error("unexpected error", "error", err)
 	WriteError(
 		w,
 		http.StatusInternalServerError,

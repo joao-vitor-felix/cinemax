@@ -45,8 +45,7 @@ func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request)
 
 	if err := ValidateStruct(input); err != nil {
 		slog.Error("validation error", "error", err)
-		e := domain.ValidationError(err.Error())
-		WriteError(w, http.StatusBadRequest, e.Code, e.Message)
+		HandleError(w, err)
 		return
 	}
 

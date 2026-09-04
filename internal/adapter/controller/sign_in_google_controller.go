@@ -24,7 +24,7 @@ func NewSignInGoogleController(service port.SignInGoogleService) *SignInGoogleCo
 //	@Accept			json
 //	@Produce		json
 //	@Param			code	body		port.SignInGoogleInput	true	"Google OAuth authorization code"
-//	@Success		200		{object}	Resource[port.SignInOutput]	"User authenticated successfully"
+//	@Success		200		{object}	port.SignInOutput	"User authenticated successfully"
 //	@Failure		400		{object}	ErrorResponse		"Bad request (invalid body or validation error)"
 //	@Failure		401		{object}	ErrorResponse		"Unauthorized (invalid or expired code, email not verified)"
 //	@Failure		500		{object}	ErrorResponse		"Internal server error"
@@ -44,8 +44,7 @@ func (c *SignInGoogleController) Execute(w http.ResponseWriter, r *http.Request)
 
 	if err := ValidateStruct(body); err != nil {
 		slog.Error("validation error", "error", err)
-		e := domain.ValidationError(err.Error())
-		WriteError(w, http.StatusBadRequest, e.Code, e.Message)
+		HandleError(w, err)
 		return
 	}
 

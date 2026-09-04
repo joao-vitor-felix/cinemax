@@ -53,9 +53,6 @@ func TestSignUpController(t *testing.T) {
 			sut.Execute(w, r)
 
 			require.Equal(t, http.StatusCreated, w.Code)
-			var body any
-			_ = controller.DecodeJSON(w.Body, &body)
-			require.Equal(t, nil, body)
 			service.AssertExpectations(t)
 		})
 
@@ -80,7 +77,7 @@ func TestSignUpController(t *testing.T) {
 
 			require.Equal(t, domain.ContactInfoUnavailableError.StatusCode, w.Code)
 			var body controller.ErrorResponse
-			_ = controller.DecodeJSON(w.Body, &body)
+			require.NoError(t, controller.DecodeJSON(w.Body, &body))
 			require.Equal(t, domain.ContactInfoUnavailableError.Code, body.Code)
 			require.Equal(t, domain.ContactInfoUnavailableError.Message, body.Message)
 			service.AssertExpectations(t)
@@ -286,7 +283,7 @@ func TestSignUpController(t *testing.T) {
 
 				require.Equal(t, http.StatusBadRequest, w.Code)
 				var body controller.ErrorResponse
-				_ = controller.DecodeJSON(w.Body, &body)
+				require.NoError(t, controller.DecodeJSON(w.Body, &body))
 				require.Equal(t, "VALIDATION_ERROR", body.Code)
 				require.Regexp(t, tt.expectedError, body.Message)
 			})

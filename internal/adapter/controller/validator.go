@@ -17,7 +17,7 @@ func ValidateStruct(input any) error {
 			errorMsg := BuildValidationErrorMessage(validationError.Field(), validationError.Tag())
 			return domain.ValidationError(errorMsg)
 		}
-		return domain.InternalServerError
+		return err
 	}
 	return nil
 }
