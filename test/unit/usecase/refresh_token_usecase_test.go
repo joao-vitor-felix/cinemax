@@ -1,4 +1,4 @@
-package service_test
+package usecase_test
 
 import (
 	"context"
@@ -9,43 +9,27 @@ import (
 	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
-	"github.com/joao-vitor-felix/cinemax/internal/core/service"
+	"github.com/joao-vitor-felix/cinemax/internal/core/usecase"
 	m "github.com/joao-vitor-felix/cinemax/test/mock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-type TokenIssuerServiceMock struct {
-	mock.Mock
-}
-
-func (t *TokenIssuerServiceMock) Generate(claims port.AccessTokenPayload) (string, error) {
-	args := t.Called(claims)
-	return args.String(0), args.Error(1)
-}
-
-func (t *TokenIssuerServiceMock) Validate(token string) (*port.AccessTokenPayload, error) {
-	args := t.Called(token)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*port.AccessTokenPayload), args.Error(1)
-}
 
 func setupRefreshTokenSut() (
-	port.RefreshTokenService,
+	port.RefreshTokenUseCase,
 	*m.RefreshTokenRepositoryMock,
 	*m.UserRepositoryMock,
-	*TokenIssuerServiceMock,
+	*m.TokenIssuerMock,
 ) {
 	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
 	userRepo := new(m.UserRepositoryMock)
-	tokenIssuer := new(TokenIssuerServiceMock)
-	sut := service.NewRefreshTokenService(refreshTokenRepo, userRepo, tokenIssuer)
+	tokenIssuer := new(m.TokenIssuerMock)
+	sut := usecase.NewRefreshTokenUseCase(refreshTokenRepo, userRepo, tokenIssuer)
 	return sut, refreshTokenRepo, userRepo, tokenIssuer
 }
 
-func TestRefreshTokenService(t *testing.T) {
+func TestRefreshTokenUseCase(t *testing.T) {
 	input := port.RefreshTokenInput{
 		RefreshToken: "old_refresh_token",
 	}

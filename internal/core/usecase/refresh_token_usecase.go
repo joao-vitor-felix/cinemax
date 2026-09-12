@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -7,26 +7,25 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type RefreshTokenService struct {
+type RefreshTokenUseCase struct {
 	refreshTokenRepo port.RefreshTokenRepository
 	userRepo         port.UserRepository
 	tokenIssuer      port.TokenIssuer
 }
 
-func NewRefreshTokenService(
+func NewRefreshTokenUseCase(
 	refreshTokenRepo port.RefreshTokenRepository,
 	userRepo port.UserRepository,
 	tokenIssuer port.TokenIssuer,
-) port.RefreshTokenService {
-	return &RefreshTokenService{
+) port.RefreshTokenUseCase {
+	return &RefreshTokenUseCase{
 		refreshTokenRepo: refreshTokenRepo,
 		userRepo:         userRepo,
 		tokenIssuer:      tokenIssuer,
 	}
 }
 
-func (s *RefreshTokenService) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
-
+func (s *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
 	refreshToken, err := s.refreshTokenRepo.GetByToken(ctx, input.RefreshToken)
 
 	if err != nil {

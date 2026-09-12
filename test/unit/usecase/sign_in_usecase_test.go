@@ -1,4 +1,4 @@
-package service_test
+package usecase_test
 
 import (
 	"context"
@@ -9,45 +9,29 @@ import (
 	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
-	"github.com/joao-vitor-felix/cinemax/internal/core/service"
+	"github.com/joao-vitor-felix/cinemax/internal/core/usecase"
 	m "github.com/joao-vitor-felix/cinemax/test/mock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-type TokenIssuerMock struct {
-	mock.Mock
-}
-
-func (t *TokenIssuerMock) Generate(claims port.AccessTokenPayload) (string, error) {
-	args := t.Called(claims)
-	return args.String(0), args.Error(1)
-}
-
-func (t *TokenIssuerMock) Validate(token string) (*port.AccessTokenPayload, error) {
-	args := t.Called(token)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*port.AccessTokenPayload), args.Error(1)
-}
 
 func setupSignInSut() (
-	port.SignInService,
+	port.SignInUseCase,
 	*m.UserRepositoryMock,
 	*HasherMock,
-	*TokenIssuerMock,
+	*m.TokenIssuerMock,
 	*m.RefreshTokenRepositoryMock,
 ) {
 	userRepo := new(m.UserRepositoryMock)
 	hasher := new(HasherMock)
-	tokenIssuer := new(TokenIssuerMock)
+	tokenIssuer := new(m.TokenIssuerMock)
 	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
-	sut := service.NewSignInService(userRepo, hasher, tokenIssuer, refreshTokenRepo)
+	sut := usecase.NewSignInUseCase(userRepo, hasher, tokenIssuer, refreshTokenRepo)
 	return sut, userRepo, hasher, tokenIssuer, refreshTokenRepo
 }
 
-func TestSignInService(t *testing.T) {
+func TestSignInUseCase(t *testing.T) {
 	input := port.SignInInput{
 		Email:    "john.doe@example.com",
 		Password: "password123",

@@ -1,4 +1,4 @@
-package service_test
+package usecase_test
 
 import (
 	"context"
@@ -8,30 +8,30 @@ import (
 	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
-	"github.com/joao-vitor-felix/cinemax/internal/core/service"
+	"github.com/joao-vitor-felix/cinemax/internal/core/usecase"
 	m "github.com/joao-vitor-felix/cinemax/test/mock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
 func setupSignInGoogleSut() (
-	port.SignInGoogleService,
+	port.SignInGoogleUseCase,
 	*m.OAuthServiceMock,
 	*m.UserRepositoryMock,
-	*TokenIssuerMock,
+	*m.TokenIssuerMock,
 	*m.RefreshTokenRepositoryMock,
 ) {
 	oauthService := new(m.OAuthServiceMock)
 	userRepo := new(m.UserRepositoryMock)
-	tokenIssuer := new(TokenIssuerMock)
+	tokenIssuer := new(m.TokenIssuerMock)
 	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
 
-	sut := service.NewSignInGoogleService(oauthService, userRepo, tokenIssuer, refreshTokenRepo)
+	sut := usecase.NewSignInGoogleUseCase(oauthService, userRepo, tokenIssuer, refreshTokenRepo)
 
 	return sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo
 }
 
-func TestSignInGoogleService(t *testing.T) {
+func TestSignInGoogleUseCase(t *testing.T) {
 	code := "valid_code"
 	accessToken := "google_access_token"
 	googleID := "12345"

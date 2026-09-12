@@ -23,6 +23,6 @@ type RefreshTokenOutput struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-type RefreshTokenService interface {
+type RefreshTokenUseCase interface {
 	Execute(ctx context.Context, input RefreshTokenInput) (*RefreshTokenOutput, error)
 }

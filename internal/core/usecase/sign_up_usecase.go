@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -7,19 +7,19 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type SignUpService struct {
+type SignUpUseCase struct {
 	userRepo       port.UserRepository
 	passwordHasher port.PasswordHasher
 }
 
-func NewSignUpService(userRepo port.UserRepository, passwordHasher port.PasswordHasher) port.SignUpService {
-	return &SignUpService{
+func NewSignUpUseCase(userRepo port.UserRepository, passwordHasher port.PasswordHasher) port.SignUpUseCase {
+	return &SignUpUseCase{
 		userRepo,
 		passwordHasher,
 	}
 }
 
-func (s *SignUpService) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
+func (s *SignUpUseCase) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
 	user, err := domain.NewUser(
 		input.FirstName,
 		input.LastName,

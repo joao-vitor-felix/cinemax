@@ -14,27 +14,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type SignUpService struct {
+type SignUpUseCase struct {
 	mock.Mock
 }
 
-func (s *SignUpService) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
+func (s *SignUpUseCase) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
 	args := s.Called(ctx, input)
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
 func TestSignUpController(t *testing.T) {
-	setupSut := func() (*controller.SignUpController, *SignUpService) {
-		serviceMock := new(SignUpService)
-		sut := controller.NewSignUpController(serviceMock)
-		return sut, serviceMock
+	setupSut := func() (*controller.SignUpController, *SignUpUseCase) {
+		useCaseMock := new(SignUpUseCase)
+		sut := controller.NewSignUpController(useCaseMock)
+		return sut, useCaseMock
 	}
 
 	url := "/auth/sign-up"
 
 	t.Run("Execute", func(t *testing.T) {
 		t.Run("should return 201 and register a new user successfully", func(t *testing.T) {
-			sut, service := setupSut()
+			sut, useCase := setupSut()
 			input := port.SignUpInput{
 				FirstName:   "John",
 				LastName:    "Doe",
@@ -45,7 +45,7 @@ func TestSignUpController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Execute", mock.Anything, input).Return(&domain.User{}, nil).Once()
+			useCase.On("Execute", mock.Anything, input).Return(&domain.User{}, nil).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
@@ -53,11 +53,11 @@ func TestSignUpController(t *testing.T) {
 			sut.Execute(w, r)
 
 			require.Equal(t, http.StatusCreated, w.Code)
-			service.AssertExpectations(t)
+			useCase.AssertExpectations(t)
 		})
 
 		t.Run("should return an error when service fails", func(t *testing.T) {
-			sut, service := setupSut()
+			sut, useCase := setupSut()
 			input := port.SignUpInput{
 				FirstName:   "John",
 				LastName:    "Doe",
@@ -68,7 +68,7 @@ func TestSignUpController(t *testing.T) {
 				Gender:      "male",
 			}
 
-			service.On("Execute", mock.Anything, input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
+			useCase.On("Execute", mock.Anything, input).Return(&domain.User{}, domain.ContactInfoUnavailableError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
@@ -80,7 +80,7 @@ func TestSignUpController(t *testing.T) {
 			require.NoError(t, controller.DecodeJSON(w.Body, &body))
 			require.Equal(t, domain.ContactInfoUnavailableError.Code, body.Code)
 			require.Equal(t, domain.ContactInfoUnavailableError.Message, body.Message)
-			service.AssertExpectations(t)
+			useCase.AssertExpectations(t)
 		})
 
 		validationTests := []struct {

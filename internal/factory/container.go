@@ -7,7 +7,7 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/adapter/auth"
 	"github.com/joao-vitor-felix/cinemax/internal/adapter/controller"
 	"github.com/joao-vitor-felix/cinemax/internal/adapter/repository"
-	"github.com/joao-vitor-felix/cinemax/internal/core/service"
+	"github.com/joao-vitor-felix/cinemax/internal/core/usecase"
 )
 
 type Container struct {
@@ -29,15 +29,15 @@ func NewContainer(db *sql.DB) *Container {
 	userRepo := repository.NewPostgresUserRepository(db)
 	refreshTokenRepo := repository.NewPostgresRefreshTokenRepository(db)
 
-	signUpService := service.NewSignUpService(userRepo, passwordHasherAdapter)
-	signInService := service.NewSignInService(userRepo, passwordHasherAdapter, tokenIssuerAdapter, refreshTokenRepo)
-	refreshTokenService := service.NewRefreshTokenService(refreshTokenRepo, userRepo, tokenIssuerAdapter)
-	signInGoogleService := service.NewSignInGoogleService(googleOAuthAdapter, userRepo, tokenIssuerAdapter, refreshTokenRepo)
+	signUpUseCase := usecase.NewSignUpUseCase(userRepo, passwordHasherAdapter)
+	signInUseCase := usecase.NewSignInUseCase(userRepo, passwordHasherAdapter, tokenIssuerAdapter, refreshTokenRepo)
+	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(refreshTokenRepo, userRepo, tokenIssuerAdapter)
+	signInGoogleUseCase := usecase.NewSignInGoogleUseCase(googleOAuthAdapter, userRepo, tokenIssuerAdapter, refreshTokenRepo)
 
 	return &Container{
-		SignUpController:           controller.NewSignUpController(signUpService),
-		SignInController:           controller.NewSignInController(signInService),
-		RefreshTokenController:     controller.NewRefreshTokenController(refreshTokenService),
-		SignInWithGoogleController: controller.NewSignInGoogleController(signInGoogleService),
+		SignUpController:           controller.NewSignUpController(signUpUseCase),
+		SignInController:           controller.NewSignInController(signInUseCase),
+		RefreshTokenController:     controller.NewRefreshTokenController(refreshTokenUseCase),
+		SignInWithGoogleController: controller.NewSignInGoogleController(signInGoogleUseCase),
 	}
 }

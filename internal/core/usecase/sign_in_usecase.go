@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -7,20 +7,20 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type SignInService struct {
+type SignInUseCase struct {
 	userRepo         port.UserRepository
 	passwordHasher   port.PasswordHasher
 	tokenIssuer      port.TokenIssuer
 	refreshTokenRepo port.RefreshTokenRepository
 }
 
-func NewSignInService(
+func NewSignInUseCase(
 	userRepo port.UserRepository,
 	passwordHasher port.PasswordHasher,
 	tokenIssuer port.TokenIssuer,
 	refreshTokenRepo port.RefreshTokenRepository,
-) port.SignInService {
-	return &SignInService{
+) port.SignInUseCase {
+	return &SignInUseCase{
 		userRepo:         userRepo,
 		passwordHasher:   passwordHasher,
 		tokenIssuer:      tokenIssuer,
@@ -28,8 +28,7 @@ func NewSignInService(
 	}
 }
 
-func (s *SignInService) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
-
+func (s *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
 	user, err := s.userRepo.FindByEmail(ctx, input.Email)
 
 	if err != nil {

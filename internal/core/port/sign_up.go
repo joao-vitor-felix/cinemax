@@ -16,6 +16,6 @@ type SignUpInput struct {
 	Gender      domain.Gender `json:"gender" validate:"oneof=male female prefer_not_to_say other"`
 }
 
-type SignUpService interface {
+type SignUpUseCase interface {
 	Execute(ctx context.Context, input SignUpInput) (*domain.User, error)
 }

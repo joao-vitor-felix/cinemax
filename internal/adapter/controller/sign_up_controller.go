@@ -9,11 +9,11 @@ import (
 )
 
 type SignUpController struct {
-	service port.SignUpService
+	useCase port.SignUpUseCase
 }
 
-func NewSignUpController(service port.SignUpService) *SignUpController {
-	return &SignUpController{service}
+func NewSignUpController(useCase port.SignUpUseCase) *SignUpController {
+	return &SignUpController{useCase}
 }
 
 // Execute godoc
@@ -47,7 +47,7 @@ func (c *SignUpController) Execute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := c.service.Execute(r.Context(), body)
+	_, err := c.useCase.Execute(r.Context(), body)
 	if err != nil {
 		HandleError(w, err)
 		return

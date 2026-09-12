@@ -1,4 +1,4 @@
-package service_test
+package usecase_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
-	"github.com/joao-vitor-felix/cinemax/internal/core/service"
+	"github.com/joao-vitor-felix/cinemax/internal/core/usecase"
 	m "github.com/joao-vitor-felix/cinemax/test/mock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -29,14 +29,14 @@ func (h *HasherMock) Compare(hash *string, password string) error {
 	return args.Error(0)
 }
 
-func setupSut() (port.SignUpService, *m.UserRepositoryMock, *HasherMock) {
+func setupSut() (port.SignUpUseCase, *m.UserRepositoryMock, *HasherMock) {
 	repoMock := new(m.UserRepositoryMock)
 	hasherMock := new(HasherMock)
-	sut := service.NewSignUpService(repoMock, hasherMock)
+	sut := usecase.NewSignUpUseCase(repoMock, hasherMock)
 	return sut, repoMock, hasherMock
 }
 
-func TestSignUpService(t *testing.T) {
+func TestSignUpUseCase(t *testing.T) {
 	input := port.SignUpInput{
 		FirstName:   "John",
 		LastName:    "Doe",

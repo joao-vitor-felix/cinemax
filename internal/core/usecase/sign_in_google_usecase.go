@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -9,20 +9,20 @@ import (
 
 const googleProvider = "google"
 
-type SignInGoogleService struct {
+type SignInGoogleUseCase struct {
 	oauthService     port.OAuthService
 	userRepo         port.UserRepository
 	tokenIssuer      port.TokenIssuer
 	refreshTokenRepo port.RefreshTokenRepository
 }
 
-func NewSignInGoogleService(
+func NewSignInGoogleUseCase(
 	oauthService port.OAuthService,
 	userRepo port.UserRepository,
 	tokenIssuer port.TokenIssuer,
 	refreshTokenRepo port.RefreshTokenRepository,
-) port.SignInGoogleService {
-	return &SignInGoogleService{
+) port.SignInGoogleUseCase {
+	return &SignInGoogleUseCase{
 		oauthService:     oauthService,
 		userRepo:         userRepo,
 		tokenIssuer:      tokenIssuer,
@@ -30,7 +30,7 @@ func NewSignInGoogleService(
 	}
 }
 
-func (s *SignInGoogleService) Execute(ctx context.Context, input port.SignInGoogleInput) (*port.SignInOutput, error) {
+func (s *SignInGoogleUseCase) Execute(ctx context.Context, input port.SignInGoogleInput) (*port.SignInOutput, error) {
 	accessToken, err := s.oauthService.GetAccessToken(input.Code)
 	if err != nil {
 		return nil, domain.InvalidCredentialsError
@@ -69,7 +69,7 @@ func (s *SignInGoogleService) Execute(ctx context.Context, input port.SignInGoog
 	}, nil
 }
 
-func (s *SignInGoogleService) resolveUser(ctx context.Context, userInfo *port.UserInfo) (*domain.User, error) {
+func (s *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.UserInfo) (*domain.User, error) {
 	userFromProviderID, err := s.userRepo.FindByProviderUserID(ctx, googleProvider, userInfo.ID)
 	if err != nil {
 		return nil, err

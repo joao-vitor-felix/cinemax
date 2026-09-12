@@ -9,11 +9,11 @@ import (
 )
 
 type RefreshTokenController struct {
-	service port.RefreshTokenService
+	useCase port.RefreshTokenUseCase
 }
 
-func NewRefreshTokenController(service port.RefreshTokenService) *RefreshTokenController {
-	return &RefreshTokenController{service}
+func NewRefreshTokenController(useCase port.RefreshTokenUseCase) *RefreshTokenController {
+	return &RefreshTokenController{useCase}
 }
 
 // Execute godoc
@@ -49,7 +49,7 @@ func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	output, err := c.service.Execute(r.Context(), input)
+	output, err := c.useCase.Execute(r.Context(), input)
 	if err != nil {
 		HandleError(w, err)
 		return

@@ -6,6 +6,6 @@ type SignInGoogleInput struct {
 	Code string `json:"code" validate:"required"`
 }
 
-type SignInGoogleService interface {
+type SignInGoogleUseCase interface {
 	Execute(ctx context.Context, input SignInGoogleInput) (*SignInOutput, error)
 }
