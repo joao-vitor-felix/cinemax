@@ -68,7 +68,7 @@ func (r *PostgresUserRepository) IsContactInfoAvailable(ctx context.Context, ema
 	return !exists, nil
 }
 
-func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
 		SELECT
 			id,
@@ -110,7 +110,7 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) 
 	return &user, nil
 }
 
-func (r *PostgresUserRepository) FindByID(ctx context.Context, id string) (*domain.User, error) {
+func (r *PostgresUserRepository) GetByID(ctx context.Context, id string) (*domain.User, error) {
 	query := `
 		SELECT
 			id,

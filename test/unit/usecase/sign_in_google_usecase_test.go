@@ -55,8 +55,8 @@ func TestSignInGoogleUseCase(t *testing.T) {
 				Picture:       "http://example.com/pic.jpg",
 			}, nil).Once()
 
-			userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil).Once()
-			userRepo.On("FindByEmail", mock.Anything, email).Return(nil, nil).Once()
+			userRepo.On("GetByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil).Once()
+			userRepo.On("GetByEmail", mock.Anything, email).Return(nil, nil).Once()
 			userRepo.On("CreateWithIdentity", mock.Anything, "John", "Doe", email, mock.AnythingOfType("*domain.FederatedIdentity")).Return(createdUserID, nil).Once()
 
 			tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil).Once()
@@ -90,7 +90,7 @@ func TestSignInGoogleUseCase(t *testing.T) {
 			}, nil).Once()
 
 			user := &domain.User{ID: userID, Email: email}
-			userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(user, nil).Once()
+			userRepo.On("GetByProviderUserID", mock.Anything, "google", googleID).Return(user, nil).Once()
 
 			tokenIssuer.On("Generate", mock.AnythingOfType("port.AccessTokenPayload")).Return(appAccessToken, nil).Once()
 			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(&domain.RefreshToken{Token: expectedRefreshToken}, nil).Once()
@@ -122,10 +122,10 @@ func TestSignInGoogleUseCase(t *testing.T) {
 				VerifiedEmail: true,
 			}, nil).Once()
 
-			userRepo.On("FindByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil).Once()
+			userRepo.On("GetByProviderUserID", mock.Anything, "google", googleID).Return(nil, nil).Once()
 
 			user := &domain.User{ID: userID, Email: email}
-			userRepo.On("FindByEmail", mock.Anything, email).Return(user, nil).Once()
+			userRepo.On("GetByEmail", mock.Anything, email).Return(user, nil).Once()
 
 			userRepo.On("LinkIdentity", mock.Anything, userID.String(), "google", googleID).Return(&domain.FederatedIdentity{}, nil).Once()
 
@@ -160,7 +160,7 @@ func TestSignInGoogleUseCase(t *testing.T) {
 			require.Nil(t, output)
 
 			oauthService.AssertExpectations(t)
-			userRepo.AssertNotCalled(t, "FindByProviderUserID")
+			userRepo.AssertNotCalled(t, "GetByProviderUserID")
 			tokenIssuer.AssertNotCalled(t, "Generate")
 			refreshTokenRepo.AssertNotCalled(t, "GenerateToken")
 		})
@@ -178,7 +178,7 @@ func TestSignInGoogleUseCase(t *testing.T) {
 			require.Nil(t, output)
 
 			oauthService.AssertExpectations(t)
-			userRepo.AssertNotCalled(t, "FindByProviderUserID")
+			userRepo.AssertNotCalled(t, "GetByProviderUserID")
 			tokenIssuer.AssertNotCalled(t, "Generate")
 			refreshTokenRepo.AssertNotCalled(t, "GenerateToken")
 		})

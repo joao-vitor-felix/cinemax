@@ -8,7 +8,7 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
 
-func (r *PostgresUserRepository) FindByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error) {
+func (r *PostgresUserRepository) GetByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error) {
 	query := `
 	SELECT
 		u.id,

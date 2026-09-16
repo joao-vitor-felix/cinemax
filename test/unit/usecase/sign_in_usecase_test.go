@@ -52,7 +52,7 @@ func TestSignInUseCase(t *testing.T) {
 			expectedAccessToken := "access_token"
 			expectedRefreshToken := "refresh_token"
 
-			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
+			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
 				ID:    userID.String(),
@@ -82,7 +82,7 @@ func TestSignInUseCase(t *testing.T) {
 		t.Run("should return error when user is not found", func(t *testing.T) {
 			sut, userRepo, hasher, tokenIssuer, refreshTokenRepo := setupSignInSut()
 
-			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(nil, nil).Once()
+			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(nil, nil).Once()
 
 			output, err := sut.Execute(context.Background(), input)
 
@@ -98,7 +98,7 @@ func TestSignInUseCase(t *testing.T) {
 		t.Run("should return error when password does not match", func(t *testing.T) {
 			sut, userRepo, hasher, tokenIssuer, refreshTokenRepo := setupSignInSut()
 
-			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
+			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(errors.New("invalid password")).Once()
 
 			output, err := sut.Execute(context.Background(), input)
@@ -117,7 +117,7 @@ func TestSignInUseCase(t *testing.T) {
 
 			expectedErr := errors.New("token generation failed")
 
-			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
+			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("", expectedErr).Once()
 
@@ -137,7 +137,7 @@ func TestSignInUseCase(t *testing.T) {
 
 			expectedErr := errors.New("refresh token generation failed")
 
-			userRepo.On("FindByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
+			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
 			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("access_token", nil).Once()
 			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(nil, expectedErr).Once()

@@ -70,7 +70,7 @@ func (s *SignInGoogleUseCase) Execute(ctx context.Context, input port.SignInGoog
 }
 
 func (s *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.UserInfo) (*domain.User, error) {
-	userFromProviderID, err := s.userRepo.FindByProviderUserID(ctx, googleProvider, userInfo.ID)
+	userFromProviderID, err := s.userRepo.GetByProviderUserID(ctx, googleProvider, userInfo.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.Us
 		return userFromProviderID, nil
 	}
 
-	userFromDb, err := s.userRepo.FindByEmail(ctx, userInfo.Email)
+	userFromDb, err := s.userRepo.GetByEmail(ctx, userInfo.Email)
 	if err != nil {
 		return nil, err
 	}

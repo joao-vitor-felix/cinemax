@@ -10,9 +10,9 @@ import (
 type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	IsContactInfoAvailable(ctx context.Context, email, phone string) (bool, error)
-	FindByEmail(ctx context.Context, email string) (*domain.User, error)
-	FindByID(ctx context.Context, id string) (*domain.User, error)
+	GetByEmail(ctx context.Context, email string) (*domain.User, error)
+	GetByID(ctx context.Context, id string) (*domain.User, error)
 	CreateWithIdentity(ctx context.Context, firstName, lastName, email string, identity *domain.FederatedIdentity) (uuid.UUID, error)
-	FindByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error)
+	GetByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error)
 	LinkIdentity(ctx context.Context, userID, provider, providerUserID string) (*domain.FederatedIdentity, error)
 }

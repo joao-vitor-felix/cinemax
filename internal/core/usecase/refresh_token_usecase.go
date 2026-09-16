@@ -48,7 +48,7 @@ func (s *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTok
 		return nil, domain.InvalidCredentialsError
 	}
 
-	user, err := s.userRepo.FindByID(ctx, refreshToken.UserID)
+	user, err := s.userRepo.GetByID(ctx, refreshToken.UserID)
 
 	if err != nil {
 		return nil, err

@@ -29,7 +29,7 @@ func NewSignInUseCase(
 }
 
 func (s *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
-	user, err := s.userRepo.FindByEmail(ctx, input.Email)
+	user, err := s.userRepo.GetByEmail(ctx, input.Email)
 
 	if err != nil {
 		return nil, err
