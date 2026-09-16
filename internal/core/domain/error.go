@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 // AppError represents an application error with HTTP status code
@@ -34,8 +36,9 @@ func ValidationError(error string) *AppError {
 }
 
 func NotFoundError(entity string) *AppError {
+	code := strings.ToUpper(fmt.Sprintf("%s_%s", entity, "not_found"))
 	return &AppError{
-		Code:       "NOT_FOUND",
+		Code:       code,
 		Message:    entity + " not found",
 		StatusCode: http.StatusNotFound,
 	}

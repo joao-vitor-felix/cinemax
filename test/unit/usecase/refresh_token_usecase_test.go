@@ -89,7 +89,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 			require.Nil(t, output)
 			var appErr *domain.AppError
 			require.ErrorAs(t, err, &appErr)
-			require.Equal(t, "NOT_FOUND", appErr.Code)
+			require.Equal(t, "TOKEN_NOT_FOUND", appErr.Code)
 
 			refreshTokenRepo.AssertExpectations(t)
 			userRepo.AssertNotCalled(t, "GetByID")
@@ -153,7 +153,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 			require.Nil(t, output)
 			var appErr *domain.AppError
 			require.ErrorAs(t, err, &appErr)
-			require.Equal(t, "NOT_FOUND", appErr.Code)
+			require.Equal(t, "USER_NOT_FOUND", appErr.Code)
 
 			refreshTokenRepo.AssertExpectations(t)
 			userRepo.AssertExpectations(t)
