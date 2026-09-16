@@ -8,10 +8,10 @@ import (
 
 type RefreshTokenRepository interface {
 	GetByToken(ctx context.Context, token string) (*domain.RefreshToken, error)
-	GenerateToken(ctx context.Context, userId string) (*domain.RefreshToken, error)
-	GenerateAndInvalidateUsedToken(ctx context.Context, token, userId string) (*domain.RefreshToken, error)
+	GenerateToken(ctx context.Context, userID string) (*domain.RefreshToken, error)
+	GenerateAndInvalidateUsedToken(ctx context.Context, token, userID string) (*domain.RefreshToken, error)
 	DeleteToken(ctx context.Context, token string) error
-	DeleteTokensByUserID(ctx context.Context, userId string) error
+	DeleteTokensByUserID(ctx context.Context, userID string) error
 }
 
 type RefreshTokenInput struct {
