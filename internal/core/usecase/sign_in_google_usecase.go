@@ -30,13 +30,13 @@ func NewSignInGoogleUseCase(
 	}
 }
 
-func (s *SignInGoogleUseCase) Execute(ctx context.Context, input port.SignInGoogleInput) (*port.SignInOutput, error) {
-	accessToken, err := s.oauthService.GetAccessToken(input.Code)
+func (u *SignInGoogleUseCase) Execute(ctx context.Context, input port.SignInGoogleInput) (*port.SignInOutput, error) {
+	accessToken, err := u.oauthService.GetAccessToken(input.Code)
 	if err != nil {
 		return nil, domain.InvalidCredentialsError
 	}
 
-	userInfo, err := s.oauthService.GetUserInfo(accessToken)
+	userInfo, err := u.oauthService.GetUserInfo(accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +45,12 @@ func (s *SignInGoogleUseCase) Execute(ctx context.Context, input port.SignInGoog
 		return nil, domain.EmailNotVerifiedError
 	}
 
-	user, err := s.resolveUser(ctx, userInfo)
+	user, err := u.resolveUser(ctx, userInfo)
 	if err != nil {
 		return nil, err
 	}
 
-	appAccessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
+	appAccessToken, err := u.tokenIssuer.Generate(port.AccessTokenPayload{
 		ID:    user.ID.String(),
 		Email: user.Email,
 	})
@@ -58,7 +58,7 @@ func (s *SignInGoogleUseCase) Execute(ctx context.Context, input port.SignInGoog
 		return nil, err
 	}
 
-	refreshToken, err := s.refreshTokenRepo.GenerateToken(ctx, user.ID.String())
+	refreshToken, err := u.refreshTokenRepo.GenerateToken(ctx, user.ID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +69,8 @@ func (s *SignInGoogleUseCase) Execute(ctx context.Context, input port.SignInGoog
 	}, nil
 }
 
-func (s *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.UserInfo) (*domain.User, error) {
-	userFromProviderID, err := s.userRepo.GetByProviderUserID(ctx, googleProvider, userInfo.ID)
+func (u *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.UserInfo) (*domain.User, error) {
+	userFromProviderID, err := u.userRepo.GetByProviderUserID(ctx, googleProvider, userInfo.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (s *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.Us
 		return userFromProviderID, nil
 	}
 
-	userFromDb, err := s.userRepo.GetByEmail(ctx, userInfo.Email)
+	userFromDb, err := u.userRepo.GetByEmail(ctx, userInfo.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (s *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.Us
 			ProviderUserID: userInfo.ID,
 		}
 
-		userID, err := s.userRepo.CreateWithIdentity(ctx, newUser.FirstName, newUser.LastName, newUser.Email, newIdentity)
+		userID, err := u.userRepo.CreateWithIdentity(ctx, newUser.FirstName, newUser.LastName, newUser.Email, newIdentity)
 		if err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (s *SignInGoogleUseCase) resolveUser(ctx context.Context, userInfo *port.Us
 		}, nil
 	}
 
-	if _, err := s.userRepo.LinkIdentity(ctx, userFromDb.ID.String(), googleProvider, userInfo.ID); err != nil {
+	if _, err := u.userRepo.LinkIdentity(ctx, userFromDb.ID.String(), googleProvider, userInfo.ID); err != nil {
 		return nil, err
 	}
 

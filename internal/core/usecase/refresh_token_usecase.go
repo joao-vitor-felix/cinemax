@@ -25,8 +25,8 @@ func NewRefreshTokenUseCase(
 	}
 }
 
-func (s *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
-	refreshToken, err := s.refreshTokenRepo.GetByToken(ctx, input.RefreshToken)
+func (u *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
+	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, input.RefreshToken)
 
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (s *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTok
 	}
 
 	if refreshToken.IsUsed() {
-		err = s.refreshTokenRepo.DeleteTokensByUserID(ctx, refreshToken.UserID)
+		err = u.refreshTokenRepo.DeleteTokensByUserID(ctx, refreshToken.UserID)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (s *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTok
 		return nil, domain.InvalidCredentialsError
 	}
 
-	user, err := s.userRepo.GetByID(ctx, refreshToken.UserID)
+	user, err := u.userRepo.GetByID(ctx, refreshToken.UserID)
 
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (s *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTok
 		return nil, domain.NotFoundError("user")
 	}
 
-	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
+	accessToken, err := u.tokenIssuer.Generate(port.AccessTokenPayload{
 		ID:    user.ID.String(),
 		Email: user.Email,
 	})
@@ -67,7 +67,7 @@ func (s *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTok
 		return nil, err
 	}
 
-	newRefreshToken, err := s.refreshTokenRepo.GenerateAndInvalidateUsedToken(ctx, refreshToken.Token, user.ID.String())
+	newRefreshToken, err := u.refreshTokenRepo.GenerateAndInvalidateUsedToken(ctx, refreshToken.Token, user.ID.String())
 	if err != nil {
 		return nil, err
 	}

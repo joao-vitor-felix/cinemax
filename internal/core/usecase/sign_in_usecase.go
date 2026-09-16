@@ -28,8 +28,8 @@ func NewSignInUseCase(
 	}
 }
 
-func (s *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
-	user, err := s.userRepo.GetByEmail(ctx, input.Email)
+func (u *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
+	user, err := u.userRepo.GetByEmail(ctx, input.Email)
 
 	if err != nil {
 		return nil, err
@@ -39,12 +39,12 @@ func (s *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*p
 		return nil, domain.InvalidCredentialsError
 	}
 
-	err = s.passwordHasher.Compare(user.PasswordHash, input.Password)
+	err = u.passwordHasher.Compare(user.PasswordHash, input.Password)
 	if err != nil {
 		return nil, domain.InvalidCredentialsError
 	}
 
-	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
+	accessToken, err := u.tokenIssuer.Generate(port.AccessTokenPayload{
 		ID:    user.ID.String(),
 		Email: user.Email,
 	})
@@ -53,7 +53,7 @@ func (s *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*p
 		return nil, err
 	}
 
-	refreshToken, err := s.refreshTokenRepo.GenerateToken(ctx, user.ID.String())
+	refreshToken, err := u.refreshTokenRepo.GenerateToken(ctx, user.ID.String())
 	if err != nil {
 		return nil, err
 	}
