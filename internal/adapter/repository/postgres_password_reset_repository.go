@@ -7,15 +7,15 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
 
-type PostgresPasswordResetTokenRepository struct {
+type PostgresPasswordResetRepository struct {
 	db *sql.DB
 }
 
-func NewPostgresPasswordResetTokenRepository(db *sql.DB) *PostgresPasswordResetTokenRepository {
-	return &PostgresPasswordResetTokenRepository{db}
+func NewPostgresPasswordResetRepository(db *sql.DB) *PostgresPasswordResetRepository {
+	return &PostgresPasswordResetRepository{db}
 }
 
-func (r *PostgresPasswordResetTokenRepository) GetByToken(ctx context.Context, token string) (*domain.PasswordResetToken, error) {
+func (r *PostgresPasswordResetRepository) GetByToken(ctx context.Context, token string) (*domain.PasswordResetToken, error) {
 	query := `
 		SELECT
 			token,
@@ -47,7 +47,7 @@ func (r *PostgresPasswordResetTokenRepository) GetByToken(ctx context.Context, t
 	return &t, nil
 }
 
-func (r *PostgresPasswordResetTokenRepository) GenerateToken(ctx context.Context, tokenHash, userID string) (*domain.PasswordResetToken, error) {
+func (r *PostgresPasswordResetRepository) GenerateToken(ctx context.Context, tokenHash, userID string) (*domain.PasswordResetToken, error) {
 	query := `
 		INSERT INTO password_reset_tokens (token, user_id, expires_at)
 		VALUES ($1, $2, NOW() + INTERVAL '10 minutes')
@@ -69,7 +69,7 @@ func (r *PostgresPasswordResetTokenRepository) GenerateToken(ctx context.Context
 	return &t, nil
 }
 
-func (r *PostgresPasswordResetTokenRepository) MarkTokenAsUsed(ctx context.Context, token string) error {
+func (r *PostgresPasswordResetRepository) MarkTokenAsUsed(ctx context.Context, token string) error {
 	query := `
 		UPDATE password_reset_tokens
 		SET used_at = NOW()
