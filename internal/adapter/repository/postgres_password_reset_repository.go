@@ -62,8 +62,8 @@ func (r *PostgresPasswordResetRepository) SaveToken(ctx context.Context, tokenHa
 
 	updateQuery := `
 		UPDATE password_reset_tokens
-		SET used_at = NOW()
-		WHERE user_id = $1 AND used_at IS NULL
+		SET expires_at = NOW()
+		WHERE user_id = $1 AND used_at IS NULL AND expires_at > NOW()
 	`
 	_, err = tx.ExecContext(ctx, updateQuery, userID)
 	if err != nil {
