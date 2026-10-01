@@ -27,10 +27,10 @@ func NewAppError(code, message string, statusCode int) *AppError {
 	}
 }
 
-func ValidationError(error string) *AppError {
+func ValidationError(err string) *AppError {
 	return &AppError{
 		Code:       "VALIDATION_ERROR",
-		Message:    error,
+		Message:    err,
 		StatusCode: http.StatusBadRequest,
 	}
 }
