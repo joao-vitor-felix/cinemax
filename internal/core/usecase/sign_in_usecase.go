@@ -19,7 +19,7 @@ func NewSignInUseCase(
 	passwordHasher port.PasswordHasher,
 	tokenIssuer port.TokenIssuer,
 	refreshTokenRepo port.RefreshTokenRepository,
-) port.SignInUseCase {
+) *SignInUseCase {
 	return &SignInUseCase{
 		userRepo:         userRepo,
 		passwordHasher:   passwordHasher,

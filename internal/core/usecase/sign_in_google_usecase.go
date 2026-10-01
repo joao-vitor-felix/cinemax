@@ -21,7 +21,7 @@ func NewSignInGoogleUseCase(
 	userRepo port.UserRepository,
 	tokenIssuer port.TokenIssuer,
 	refreshTokenRepo port.RefreshTokenRepository,
-) port.SignInGoogleUseCase {
+) *SignInGoogleUseCase {
 	return &SignInGoogleUseCase{
 		oauthService:     oauthService,
 		userRepo:         userRepo,

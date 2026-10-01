@@ -12,7 +12,7 @@ type SignUpUseCase struct {
 	passwordHasher port.PasswordHasher
 }
 
-func NewSignUpUseCase(userRepo port.UserRepository, passwordHasher port.PasswordHasher) port.SignUpUseCase {
+func NewSignUpUseCase(userRepo port.UserRepository, passwordHasher port.PasswordHasher) *SignUpUseCase {
 	return &SignUpUseCase{
 		userRepo,
 		passwordHasher,

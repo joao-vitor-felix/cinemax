@@ -17,7 +17,7 @@ func NewRefreshTokenUseCase(
 	refreshTokenRepo port.RefreshTokenRepository,
 	userRepo port.UserRepository,
 	tokenIssuer port.TokenIssuer,
-) port.RefreshTokenUseCase {
+) *RefreshTokenUseCase {
 	return &RefreshTokenUseCase{
 		refreshTokenRepo: refreshTokenRepo,
 		userRepo:         userRepo,
