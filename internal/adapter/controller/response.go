@@ -15,6 +15,10 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
+type MessageResponse struct {
+	Message string `json:"message"`
+}
+
 func WriteJSON(w http.ResponseWriter, status int, d any) {
 	w.Header().Set("Content-Type", "application/json")
 	if d == nil {
