@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"log/slog"
 
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
@@ -47,15 +49,35 @@ func (r *PostgresPasswordResetRepository) GetByToken(ctx context.Context, token 
 	return &t, nil
 }
 
-func (r *PostgresPasswordResetRepository) GenerateToken(ctx context.Context, tokenHash, userID string) (*domain.PasswordResetToken, error) {
-	query := `
+func (r *PostgresPasswordResetRepository) SaveToken(ctx context.Context, tokenHash, userID string) (*domain.PasswordResetToken, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			slog.Error("failed to rollback transaction", "error", err)
+		}
+	}()
+
+	updateQuery := `
+		UPDATE password_reset_tokens
+		SET used_at = NOW()
+		WHERE user_id = $1 AND used_at IS NULL
+	`
+	_, err = tx.ExecContext(ctx, updateQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	insertQuery := `
 		INSERT INTO password_reset_tokens (token, user_id, expires_at)
 		VALUES ($1, $2, NOW() + INTERVAL '10 minutes')
 		RETURNING token, user_id, expires_at, used_at
 	`
 
 	var t domain.PasswordResetToken
-	err := r.db.QueryRowContext(ctx, query, tokenHash, userID).Scan(
+	err = tx.QueryRowContext(ctx, insertQuery, tokenHash, userID).Scan(
 		&t.Token,
 		&t.UserID,
 		&t.ExpiresAt,
@@ -63,6 +85,10 @@ func (r *PostgresPasswordResetRepository) GenerateToken(ctx context.Context, tok
 	)
 
 	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
 
