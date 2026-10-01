@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
@@ -34,12 +36,14 @@ func (u *ForgotPasswordUseCase) Execute(ctx context.Context, input port.ForgotPa
 	}
 
 	token, err := util.GenerateSecureTokenCustom(64)
-
 	if err != nil {
 		return err
 	}
 
-	_, err = u.passwordResetRepo.SaveToken(ctx, token, user.ID.String())
+	hasher := sha256.New()
+	hasher.Write([]byte(token))
+	hashedToken := hex.EncodeToString(hasher.Sum(nil))
+	_, err = u.passwordResetRepo.SaveToken(ctx, hashedToken, user.ID.String())
 
 	if err != nil {
 		return err
