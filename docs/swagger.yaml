@@ -9,6 +9,11 @@ definitions:
       message:
         type: string
     type: object
+  controller.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
   domain.Gender:
     enum:
     - male
@@ -21,6 +26,13 @@ definitions:
     - Female
     - Other
     - PreferNotToSay
+  port.ForgotPasswordInput:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
   port.RefreshTokenInput:
     properties:
       refresh_token:
@@ -34,6 +46,17 @@ definitions:
         type: string
       refresh_token:
         type: string
+    type: object
+  port.ResetPasswordInput:
+    properties:
+      new_password:
+        minLength: 8
+        type: string
+      token:
+        type: string
+    required:
+    - new_password
+    - token
     type: object
   port.SignInGoogleInput:
     properties:
@@ -102,6 +125,40 @@ info:
   title: Cinemax API
   version: "1.0"
 paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send a forgot password email
+      parameters:
+      - description: Forgot Password Input
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/port.ForgotPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message response
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Forgot password
+      tags:
+      - Auth
   /auth/refresh-token:
     post:
       consumes:
@@ -138,6 +195,40 @@ paths:
           schema:
             $ref: '#/definitions/controller.ErrorResponse'
       summary: Refresh access token
+      tags:
+      - Auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Resets the user's password using a valid token
+      parameters:
+      - description: Reset Password Input
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/port.ResetPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message response
+          schema:
+            $ref: '#/definitions/controller.MessageResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/controller.ErrorResponse'
+      summary: Reset password
       tags:
       - Auth
   /auth/sign-in:
