@@ -16,6 +16,7 @@ type Container struct {
 	RefreshTokenController     *controller.RefreshTokenController
 	SignInWithGoogleController *controller.SignInGoogleController
 	ForgotPasswordController   *controller.ForgotPasswordController
+	ResetPasswordController    *controller.ResetPasswordController
 }
 
 func NewContainer(db *sql.DB) *Container {
@@ -30,12 +31,14 @@ func NewContainer(db *sql.DB) *Container {
 	userRepo := repository.NewPostgresUserRepository(db)
 	refreshTokenRepo := repository.NewPostgresRefreshTokenRepository(db)
 	passwordResetRepo := repository.NewPostgresPasswordResetRepository(db)
+	uow := repository.NewPostgresUnitOfWork(db)
 
 	signUpUseCase := usecase.NewSignUpUseCase(userRepo, passwordHasherAdapter)
 	signInUseCase := usecase.NewSignInUseCase(userRepo, passwordHasherAdapter, tokenIssuerAdapter, refreshTokenRepo)
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(refreshTokenRepo, userRepo, tokenIssuerAdapter)
 	signInGoogleUseCase := usecase.NewSignInGoogleUseCase(googleOAuthAdapter, userRepo, tokenIssuerAdapter, refreshTokenRepo)
 	forgotPasswordUseCase := usecase.NewPasswordResetUseCase(passwordResetRepo, userRepo)
+	resetPasswordUseCase := usecase.NewResetPasswordUseCase(passwordResetRepo, userRepo, passwordHasherAdapter, uow)
 
 	return &Container{
 		SignUpController:           controller.NewSignUpController(signUpUseCase),
@@ -43,5 +46,6 @@ func NewContainer(db *sql.DB) *Container {
 		RefreshTokenController:     controller.NewRefreshTokenController(refreshTokenUseCase),
 		SignInWithGoogleController: controller.NewSignInGoogleController(signInGoogleUseCase),
 		ForgotPasswordController:   controller.NewForgotPasswordController(forgotPasswordUseCase),
+		ResetPasswordController:    controller.NewResetPasswordController(resetPasswordUseCase),
 	}
 }
