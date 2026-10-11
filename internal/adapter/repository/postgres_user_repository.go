@@ -152,3 +152,13 @@ func (r *PostgresUserRepository) GetByID(ctx context.Context, id string) (*domai
 
 	return &user, nil
 }
+
+func (r *PostgresUserRepository) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
+	query := `
+		UPDATE users
+		SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $2
+	`
+	_, err := getExecutor(ctx, r.db).ExecContext(ctx, query, hashedPassword, userID)
+	return err
+}
