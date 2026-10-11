@@ -17,3 +17,13 @@ func (t *PasswordResetToken) IsExpired() bool {
 func (t *PasswordResetToken) IsUsed() bool {
 	return t.UsedAt != nil
 }
+
+func (t *PasswordResetToken) Validate() error {
+	if t.IsUsed() {
+		return TokenAlreadyUsedError
+	}
+	if t.IsExpired() {
+		return TokenExpiredError
+	}
+	return nil
+}
