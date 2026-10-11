@@ -16,10 +16,15 @@ type ForgotPasswordInput struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-// type PasswordResetUseCase interface {
-// 	Execute(ctx context.Context, userID string, input PasswordResetTokenInput) error
-// }
-
 type ForgotPasswordUseCase interface {
 	Execute(ctx context.Context, input ForgotPasswordInput) error
+}
+
+type ResetPasswordInput struct {
+	Token       string `json:"token" validate:"required"`
+	NewPassword string `json:"new_password" validate:"required,min=8"`
+}
+
+type ResetPasswordUseCase interface {
+	Execute(ctx context.Context, input ResetPasswordInput) error
 }
