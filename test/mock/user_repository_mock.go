@@ -64,3 +64,8 @@ func (m *UserRepositoryMock) LinkIdentity(ctx context.Context, userID, provider,
 	}
 	return args.Get(0).(*domain.FederatedIdentity), args.Error(1)
 }
+
+func (m *UserRepositoryMock) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
+	args := m.Called(ctx, userID, hashedPassword)
+	return args.Error(0)
+}
