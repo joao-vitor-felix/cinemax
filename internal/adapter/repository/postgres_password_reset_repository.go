@@ -101,7 +101,7 @@ func (r *PostgresPasswordResetRepository) MarkTokenAsUsed(ctx context.Context, t
 		SET used_at = NOW()
 		WHERE token = $1
 	`
-	result, err := r.db.ExecContext(ctx, query, token)
+	result, err := getExecutor(ctx, r.db).ExecContext(ctx, query, token)
 	if err != nil {
 		return err
 	}
