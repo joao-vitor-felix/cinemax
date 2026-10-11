@@ -15,4 +15,5 @@ type UserRepository interface {
 	CreateWithIdentity(ctx context.Context, firstName, lastName, email string, identity *domain.FederatedIdentity) (uuid.UUID, error)
 	GetByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error)
 	LinkIdentity(ctx context.Context, userID, provider, providerUserID string) (*domain.FederatedIdentity, error)
+	UpdatePassword(ctx context.Context, userID string, hashedPassword string) error
 }
