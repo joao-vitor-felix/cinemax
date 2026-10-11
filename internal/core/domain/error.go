@@ -89,4 +89,16 @@ var (
 		"email is not verified with the provider",
 		http.StatusUnauthorized,
 	)
+
+	TokenAlreadyUsedError = NewAppError(
+		"TOKEN_USED",
+		"token has already been used",
+		http.StatusBadRequest,
+	)
+
+	TokenExpiredError = NewAppError(
+		"TOKEN_EXPIRED",
+		"token has expired",
+		http.StatusBadRequest,
+	)
 )
