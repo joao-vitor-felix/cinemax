@@ -15,30 +15,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type PasswordHasherMock struct {
-	mock.Mock
-}
-
-func (h *PasswordHasherMock) Hash(password string) (string, error) {
-	args := h.Called(password)
-	return args.String(0), args.Error(1)
-}
-
-func (h *PasswordHasherMock) Compare(hash *string, password string) error {
-	args := h.Called(hash, password)
-	return args.Error(0)
-}
-
 func setupResetPasswordSut() (
 	port.ResetPasswordUseCase,
 	*m.PasswordResetRepositoryMock,
 	*m.UserRepositoryMock,
-	*PasswordHasherMock,
+	*m.PasswordHasherMock,
 	*m.UnitOfWorkMock,
 ) {
 	passwordResetRepo := new(m.PasswordResetRepositoryMock)
 	userRepo := new(m.UserRepositoryMock)
-	passwordHasher := new(PasswordHasherMock)
+	passwordHasher := new(m.PasswordHasherMock)
 	uow := new(m.UnitOfWorkMock)
 
 	sut := usecase.NewResetPasswordUseCase(passwordResetRepo, userRepo, passwordHasher, uow)
