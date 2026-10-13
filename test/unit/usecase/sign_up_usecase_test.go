@@ -15,23 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type HasherMock struct {
-	mock.Mock
-}
-
-func (h *HasherMock) Hash(password string) (string, error) {
-	args := h.Called(password)
-	return args.String(0), args.Error(1)
-}
-
-func (h *HasherMock) Compare(hash *string, password string) error {
-	args := h.Called(hash, password)
-	return args.Error(0)
-}
-
-func setupSut() (port.SignUpUseCase, *m.UserRepositoryMock, *HasherMock) {
+func setupSut() (port.SignUpUseCase, *m.UserRepositoryMock, *m.PasswordHasherMock) {
 	repoMock := new(m.UserRepositoryMock)
-	hasherMock := new(HasherMock)
+	hasherMock := new(m.PasswordHasherMock)
 	sut := usecase.NewSignUpUseCase(repoMock, hasherMock)
 	return sut, repoMock, hasherMock
 }
