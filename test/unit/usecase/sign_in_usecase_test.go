@@ -19,12 +19,12 @@ import (
 func setupSignInSut() (
 	port.SignInUseCase,
 	*m.UserRepositoryMock,
-	*HasherMock,
+	*m.PasswordHasherMock,
 	*m.TokenIssuerMock,
 	*m.RefreshTokenRepositoryMock,
 ) {
 	userRepo := new(m.UserRepositoryMock)
-	hasher := new(HasherMock)
+	hasher := new(m.PasswordHasherMock)
 	tokenIssuer := new(m.TokenIssuerMock)
 	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
 	sut := usecase.NewSignInUseCase(userRepo, hasher, tokenIssuer, refreshTokenRepo)
@@ -53,7 +53,7 @@ func TestSignInUseCase(t *testing.T) {
 			expectedRefreshToken := "refresh_token"
 
 			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
-			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
+			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(true, nil).Once()
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
 				ID:    userID.String(),
 				Email: mockUser.Email,
@@ -99,11 +99,30 @@ func TestSignInUseCase(t *testing.T) {
 			sut, userRepo, hasher, tokenIssuer, refreshTokenRepo := setupSignInSut()
 
 			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
-			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(errors.New("invalid password")).Once()
+			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(false, nil).Once()
 
 			output, err := sut.Execute(context.Background(), input)
 
 			require.ErrorIs(t, err, domain.InvalidCredentialsError)
+			require.Nil(t, output)
+
+			userRepo.AssertExpectations(t)
+			hasher.AssertExpectations(t)
+			tokenIssuer.AssertNotCalled(t, "Generate")
+			refreshTokenRepo.AssertNotCalled(t, "GenerateToken")
+		})
+
+		t.Run("should return error when password comparison fails", func(t *testing.T) {
+			sut, userRepo, hasher, tokenIssuer, refreshTokenRepo := setupSignInSut()
+
+			expectedErr := errors.New("hashing comparison error")
+
+			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
+			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(false, expectedErr).Once()
+
+			output, err := sut.Execute(context.Background(), input)
+
+			require.ErrorIs(t, err, expectedErr)
 			require.Nil(t, output)
 
 			userRepo.AssertExpectations(t)
@@ -118,7 +137,7 @@ func TestSignInUseCase(t *testing.T) {
 			expectedErr := errors.New("token generation failed")
 
 			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
-			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
+			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(true, nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("", expectedErr).Once()
 
 			output, err := sut.Execute(context.Background(), input)
@@ -138,7 +157,7 @@ func TestSignInUseCase(t *testing.T) {
 			expectedErr := errors.New("refresh token generation failed")
 
 			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(mockUser, nil).Once()
-			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(nil).Once()
+			hasher.On("Compare", mockUser.PasswordHash, input.Password).Return(true, nil).Once()
 			tokenIssuer.On("Generate", mock.Anything).Return("access_token", nil).Once()
 			refreshTokenRepo.On("GenerateToken", mock.Anything, userID.String()).Return(nil, expectedErr).Once()
 
