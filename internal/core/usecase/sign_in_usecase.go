@@ -39,8 +39,12 @@ func (u *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*p
 		return nil, domain.InvalidCredentialsError
 	}
 
-	err = u.passwordHasher.Compare(user.PasswordHash, input.Password)
+	match, err := u.passwordHasher.Compare(user.PasswordHash, input.Password)
 	if err != nil {
+		return nil, err
+	}
+
+	if !match {
 		return nil, domain.InvalidCredentialsError
 	}
 
