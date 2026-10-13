@@ -61,6 +61,8 @@ func (u *ResetPasswordUseCase) Execute(ctx context.Context, input port.ResetPass
 			return err
 		}
 
+		// TODO: invalidate active sessions
+
 		return nil
 	})
 
@@ -68,7 +70,7 @@ func (u *ResetPasswordUseCase) Execute(ctx context.Context, input port.ResetPass
 		return err
 	}
 
-	// TODO: invalidate active sessions
+	//TODO: email user
 
 	return nil
 }
