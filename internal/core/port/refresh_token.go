@@ -15,7 +15,7 @@ type RefreshTokenRepository interface {
 }
 
 type RefreshTokenInput struct {
-	RefreshToken string `json:"refresh_token" validate:"required"`
+	Token string `json:"token" validate:"required"`
 }
 
 type RefreshTokenOutput struct {
