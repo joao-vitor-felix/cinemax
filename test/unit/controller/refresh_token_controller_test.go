@@ -40,7 +40,7 @@ func TestRefreshTokenController(t *testing.T) {
 			sut, useCase := setupSut()
 
 			input := port.RefreshTokenInput{
-				RefreshToken: "valid_refresh_token",
+				Token: "valid_refresh_token",
 			}
 			output := &port.RefreshTokenOutput{
 				AccessToken:  "new_access_token",
@@ -66,7 +66,7 @@ func TestRefreshTokenController(t *testing.T) {
 			sut, useCase := setupSut()
 
 			input := port.RefreshTokenInput{
-				RefreshToken: "invalid_refresh_token",
+				Token: "invalid_refresh_token",
 			}
 
 			useCase.On("Execute", mock.Anything, input).Return(nil, domain.InvalidCredentialsError).Once()
@@ -94,7 +94,7 @@ func TestRefreshTokenController(t *testing.T) {
 				name:          "refresh token is missing",
 				expectedError: "(?i)required",
 				body: port.RefreshTokenInput{
-					RefreshToken: "",
+					Token: "",
 				},
 			},
 		}
@@ -107,7 +107,7 @@ func TestRefreshTokenController(t *testing.T) {
 				w := httptest.NewRecorder()
 
 				sut.Execute(w, r)
-				
+
 				require.Equal(t, http.StatusBadRequest, w.Code)
 				var body controller.ErrorResponse
 				require.NoError(t, controller.DecodeJSON(w.Body, &body))
