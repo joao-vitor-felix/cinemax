@@ -380,10 +380,10 @@ const docTemplate = `{
         "port.RefreshTokenInput": {
             "type": "object",
             "required": [
-                "refresh_token"
+                "token"
             ],
             "properties": {
-                "refresh_token": {
+                "token": {
                     "type": "string"
                 }
             }

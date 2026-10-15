@@ -35,10 +35,10 @@ definitions:
     type: object
   port.RefreshTokenInput:
     properties:
-      refresh_token:
+      token:
         type: string
     required:
-    - refresh_token
+    - token
     type: object
   port.RefreshTokenOutput:
     properties:
