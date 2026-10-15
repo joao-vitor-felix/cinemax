@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-
 func setupRefreshTokenSut() (
 	port.RefreshTokenUseCase,
 	*m.RefreshTokenRepositoryMock,
@@ -31,7 +30,7 @@ func setupRefreshTokenSut() (
 
 func TestRefreshTokenUseCase(t *testing.T) {
 	input := port.RefreshTokenInput{
-		RefreshToken: "old_refresh_token",
+		Token: "old_refresh_token",
 	}
 
 	userID := uuid.New()
@@ -41,7 +40,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 	}
 
 	validOldToken := &domain.RefreshToken{
-		Token:     input.RefreshToken,
+		Token:     input.Token,
 		UserID:    userID.String(),
 		ExpiresAt: time.Now().Add(time.Hour * 1),
 	}
@@ -53,7 +52,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 			expectedAccessToken := "new_access_token"
 			expectedNewRefreshToken := "new_refresh_token"
 
-			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.Token).Return(validOldToken, nil).Once()
 			userRepo.On("GetByID", mock.Anything, validOldToken.UserID).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
@@ -64,7 +63,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 			newRt := &domain.RefreshToken{
 				Token: expectedNewRefreshToken,
 			}
-			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.RefreshToken, userID.String()).Return(newRt, nil).Once()
+			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.Token, userID.String()).Return(newRt, nil).Once()
 
 			output, err := sut.Execute(context.Background(), input)
 
@@ -81,7 +80,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 		t.Run("should return error when token is not found", func(t *testing.T) {
 			sut, refreshTokenRepo, userRepo, tokenIssuer := setupRefreshTokenSut()
 
-			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(nil, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.Token).Return(nil, nil).Once()
 
 			output, err := sut.Execute(context.Background(), input)
 
@@ -101,13 +100,13 @@ func TestRefreshTokenUseCase(t *testing.T) {
 
 			usedTime := time.Now().Add(-1 * time.Hour)
 			usedToken := &domain.RefreshToken{
-				Token:     input.RefreshToken,
+				Token:     input.Token,
 				UserID:    userID.String(),
 				ExpiresAt: time.Now().Add(time.Hour * 1),
 				UsedAt:    &usedTime,
 			}
 
-			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(usedToken, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.Token).Return(usedToken, nil).Once()
 			refreshTokenRepo.On("DeleteTokensByUserID", mock.Anything, userID.String()).Return(nil).Once()
 
 			output, err := sut.Execute(context.Background(), input)
@@ -124,12 +123,12 @@ func TestRefreshTokenUseCase(t *testing.T) {
 			sut, refreshTokenRepo, userRepo, tokenIssuer := setupRefreshTokenSut()
 
 			expiredToken := &domain.RefreshToken{
-				Token:     input.RefreshToken,
+				Token:     input.Token,
 				UserID:    userID.String(),
 				ExpiresAt: time.Now().Add(-1 * time.Hour),
 			}
 
-			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(expiredToken, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.Token).Return(expiredToken, nil).Once()
 
 			output, err := sut.Execute(context.Background(), input)
 
@@ -144,7 +143,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 		t.Run("should return error when user is not found", func(t *testing.T) {
 			sut, refreshTokenRepo, userRepo, tokenIssuer := setupRefreshTokenSut()
 
-			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.Token).Return(validOldToken, nil).Once()
 			userRepo.On("GetByID", mock.Anything, validOldToken.UserID).Return(nil, nil).Once()
 
 			output, err := sut.Execute(context.Background(), input)
@@ -165,7 +164,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 
 			expectedErr := errors.New("token gen fail")
 
-			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.Token).Return(validOldToken, nil).Once()
 			userRepo.On("GetByID", mock.Anything, validOldToken.UserID).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
@@ -188,7 +187,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 
 			expectedErr := errors.New("db error replacing token")
 
-			refreshTokenRepo.On("GetByToken", mock.Anything, input.RefreshToken).Return(validOldToken, nil).Once()
+			refreshTokenRepo.On("GetByToken", mock.Anything, input.Token).Return(validOldToken, nil).Once()
 			userRepo.On("GetByID", mock.Anything, validOldToken.UserID).Return(mockUser, nil).Once()
 
 			tokenIssuer.On("Generate", port.AccessTokenPayload{
@@ -196,7 +195,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 				Email: mockUser.Email,
 			}).Return("at_123", nil).Once()
 
-			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.RefreshToken, userID.String()).Return(nil, expectedErr).Once()
+			refreshTokenRepo.On("GenerateAndInvalidateUsedToken", mock.Anything, input.Token, userID.String()).Return(nil, expectedErr).Once()
 
 			output, err := sut.Execute(context.Background(), input)
 
