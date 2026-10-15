@@ -26,7 +26,7 @@ func NewRefreshTokenUseCase(
 }
 
 func (u *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
-	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, input.RefreshToken)
+	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, input.Token)
 
 	if err != nil {
 		return nil, err
