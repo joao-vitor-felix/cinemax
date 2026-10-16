@@ -59,18 +59,14 @@ func TestForgotPasswordUseCase(t *testing.T) {
 			passwordResetRepo.AssertNotCalled(t, "SaveToken")
 		})
 
-		t.Run("should return NotFoundError when user does not exist", func(t *testing.T) {
+		t.Run("should return nil and not generate a token when user does not exist", func(t *testing.T) {
 			sut, passwordResetRepo, userRepo := setupSut()
 
 			userRepo.On("GetByEmail", mock.Anything, input.Email).Return(nil, nil).Once()
 
 			err := sut.Execute(context.Background(), input)
 
-			require.Error(t, err)
-			var appErr *domain.AppError
-			require.ErrorAs(t, err, &appErr)
-			require.Equal(t, "USER_NOT_FOUND", appErr.Code)
-
+			require.NoError(t, err)
 			userRepo.AssertExpectations(t)
 			passwordResetRepo.AssertNotCalled(t, "SaveToken")
 		})

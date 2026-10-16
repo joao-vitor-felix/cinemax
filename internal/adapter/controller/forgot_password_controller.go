@@ -26,7 +26,6 @@ func NewForgotPasswordController(useCase port.ForgotPasswordUseCase) *ForgotPass
 //	@Param			request	body		port.ForgotPasswordInput	true	"Forgot Password Input"
 //	@Success		200		{object}	MessageResponse				"Message response"
 //	@Failure		400		{object}	ErrorResponse				"Bad request"
-//	@Failure		404		{object}	ErrorResponse				"Not Found"
 //	@Failure		500		{object}	ErrorResponse				"Internal server error"
 //	@Router			/auth/forgot-password [post]
 func (c *ForgotPasswordController) Execute(w http.ResponseWriter, r *http.Request) {

@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
-	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 	"github.com/joao-vitor-felix/cinemax/internal/core/util"
 )
@@ -32,7 +31,7 @@ func (u *ForgotPasswordUseCase) Execute(ctx context.Context, input port.ForgotPa
 	}
 
 	if user == nil {
-		return domain.NotFoundError("user")
+		return nil
 	}
 
 	token, err := util.GenerateSecureTokenCustom(64)
