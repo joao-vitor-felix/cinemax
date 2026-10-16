@@ -159,7 +159,7 @@ paths:
       summary: Forgot password
       tags:
       - Auth
-  /auth/refresh-token:
+  /auth/refresh:
     post:
       consumes:
       - application/json

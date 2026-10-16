@@ -73,7 +73,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/refresh-token": {
+        "/auth/refresh": {
             "post": {
                 "description": "Refresh the access token using a valid refresh token.",
                 "consumes": [
