@@ -14,7 +14,9 @@ func TestPostgresUnitOfWork(t *testing.T) {
 	t.Run("should execute successfully and commit the transaction", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer db.Close()
+		defer func() {
+			_ = db.Close()
+		}()
 
 		mock.ExpectBegin()
 		mock.ExpectCommit()
@@ -33,7 +35,9 @@ func TestPostgresUnitOfWork(t *testing.T) {
 	t.Run("should rollback transaction when callback returns an error", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer db.Close()
+		defer func() {
+			_ = db.Close()
+		}()
 
 		mock.ExpectBegin()
 		mock.ExpectRollback()
@@ -53,7 +57,9 @@ func TestPostgresUnitOfWork(t *testing.T) {
 	t.Run("should return error if BeginTx fails", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer db.Close()
+		defer func() {
+			_ = db.Close()
+		}()
 
 		expectedErr := errors.New("begin failed")
 		mock.ExpectBegin().WillReturnError(expectedErr)
@@ -71,7 +77,10 @@ func TestPostgresUnitOfWork(t *testing.T) {
 	t.Run("should return error if Commit fails", func(t *testing.T) {
 		db, mock, err := sqlmock.New()
 		require.NoError(t, err)
-		defer db.Close()
+
+		defer func() {
+			_ = db.Close()
+		}()
 
 		mock.ExpectBegin()
 		expectedErr := errors.New("commit failed")
