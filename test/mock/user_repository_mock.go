@@ -25,7 +25,7 @@ func (m *UserRepositoryMock) IsContactInfoAvailable(ctx context.Context, email, 
 	return args.Bool(0), args.Error(1)
 }
 
-func (m *UserRepositoryMock) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+func (m *UserRepositoryMock) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	args := m.Called(ctx, email)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -33,7 +33,7 @@ func (m *UserRepositoryMock) FindByEmail(ctx context.Context, email string) (*do
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *UserRepositoryMock) FindByID(ctx context.Context, id string) (*domain.User, error) {
+func (m *UserRepositoryMock) GetByID(ctx context.Context, id string) (*domain.User, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -49,7 +49,7 @@ func (m *UserRepositoryMock) CreateWithIdentity(ctx context.Context, firstName, 
 	return args.Get(0).(uuid.UUID), args.Error(1)
 }
 
-func (m *UserRepositoryMock) FindByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error) {
+func (m *UserRepositoryMock) GetByProviderUserID(ctx context.Context, provider, providerUserID string) (*domain.User, error) {
 	args := m.Called(ctx, provider, providerUserID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -63,4 +63,9 @@ func (m *UserRepositoryMock) LinkIdentity(ctx context.Context, userID, provider,
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*domain.FederatedIdentity), args.Error(1)
+}
+
+func (m *UserRepositoryMock) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
+	args := m.Called(ctx, userID, hashedPassword)
+	return args.Error(0)
 }

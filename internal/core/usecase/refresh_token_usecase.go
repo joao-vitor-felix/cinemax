@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -7,27 +7,26 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type RefreshTokenService struct {
+type RefreshTokenUseCase struct {
 	refreshTokenRepo port.RefreshTokenRepository
 	userRepo         port.UserRepository
 	tokenIssuer      port.TokenIssuer
 }
 
-func NewRefreshTokenService(
+func NewRefreshTokenUseCase(
 	refreshTokenRepo port.RefreshTokenRepository,
 	userRepo port.UserRepository,
 	tokenIssuer port.TokenIssuer,
-) port.RefreshTokenService {
-	return &RefreshTokenService{
+) *RefreshTokenUseCase {
+	return &RefreshTokenUseCase{
 		refreshTokenRepo: refreshTokenRepo,
 		userRepo:         userRepo,
 		tokenIssuer:      tokenIssuer,
 	}
 }
 
-func (s *RefreshTokenService) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
-
-	refreshToken, err := s.refreshTokenRepo.GetByToken(ctx, input.RefreshToken)
+func (u *RefreshTokenUseCase) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
+	refreshToken, err := u.refreshTokenRepo.GetByToken(ctx, input.Token)
 
 	if err != nil {
 		return nil, err
@@ -38,7 +37,7 @@ func (s *RefreshTokenService) Execute(ctx context.Context, input port.RefreshTok
 	}
 
 	if refreshToken.IsUsed() {
-		err = s.refreshTokenRepo.DeleteTokensByUserID(ctx, refreshToken.UserID)
+		err = u.refreshTokenRepo.DeleteTokensByUserID(ctx, refreshToken.UserID)
 		if err != nil {
 			return nil, err
 		}
@@ -49,7 +48,7 @@ func (s *RefreshTokenService) Execute(ctx context.Context, input port.RefreshTok
 		return nil, domain.InvalidCredentialsError
 	}
 
-	user, err := s.userRepo.FindByID(ctx, refreshToken.UserID)
+	user, err := u.userRepo.GetByID(ctx, refreshToken.UserID)
 
 	if err != nil {
 		return nil, err
@@ -59,7 +58,7 @@ func (s *RefreshTokenService) Execute(ctx context.Context, input port.RefreshTok
 		return nil, domain.NotFoundError("user")
 	}
 
-	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
+	accessToken, err := u.tokenIssuer.Generate(port.AccessTokenPayload{
 		ID:    user.ID.String(),
 		Email: user.Email,
 	})
@@ -68,7 +67,7 @@ func (s *RefreshTokenService) Execute(ctx context.Context, input port.RefreshTok
 		return nil, err
 	}
 
-	newRefreshToken, err := s.refreshTokenRepo.GenerateAndInvalidateUsedToken(ctx, refreshToken.Token, user.ID.String())
+	newRefreshToken, err := u.refreshTokenRepo.GenerateAndInvalidateUsedToken(ctx, refreshToken.Token, user.ID.String())
 	if err != nil {
 		return nil, err
 	}

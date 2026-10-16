@@ -14,11 +14,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type RefreshTokenServiceMock struct {
+type RefreshTokenUseCaseMock struct {
 	mock.Mock
 }
 
-func (s *RefreshTokenServiceMock) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
+func (s *RefreshTokenUseCaseMock) Execute(ctx context.Context, input port.RefreshTokenInput) (*port.RefreshTokenOutput, error) {
 	args := s.Called(ctx, input)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -27,27 +27,27 @@ func (s *RefreshTokenServiceMock) Execute(ctx context.Context, input port.Refres
 }
 
 func TestRefreshTokenController(t *testing.T) {
-	setupSut := func() (*controller.RefreshTokenController, *RefreshTokenServiceMock) {
-		serviceMock := new(RefreshTokenServiceMock)
-		sut := controller.NewRefreshTokenController(serviceMock)
-		return sut, serviceMock
+	setupSut := func() (*controller.RefreshTokenController, *RefreshTokenUseCaseMock) {
+		useCaseMock := new(RefreshTokenUseCaseMock)
+		sut := controller.NewRefreshTokenController(useCaseMock)
+		return sut, useCaseMock
 	}
 
 	url := "/auth/refresh-token"
 
 	t.Run("Execute", func(t *testing.T) {
 		t.Run("should refresh tokens successfully and return 200", func(t *testing.T) {
-			sut, service := setupSut()
+			sut, useCase := setupSut()
 
 			input := port.RefreshTokenInput{
-				RefreshToken: "valid_refresh_token",
+				Token: "valid_refresh_token",
 			}
 			output := &port.RefreshTokenOutput{
 				AccessToken:  "new_access_token",
 				RefreshToken: "new_refresh_token",
 			}
 
-			service.On("Execute", mock.Anything, input).Return(output, nil).Once()
+			useCase.On("Execute", mock.Anything, input).Return(output, nil).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
@@ -59,17 +59,17 @@ func TestRefreshTokenController(t *testing.T) {
 			require.NoError(t, controller.DecodeJSON(w.Body, &res))
 			require.Equal(t, *output, res)
 
-			service.AssertExpectations(t)
+			useCase.AssertExpectations(t)
 		})
 
 		t.Run("should return an error when service fails", func(t *testing.T) {
-			sut, service := setupSut()
+			sut, useCase := setupSut()
 
 			input := port.RefreshTokenInput{
-				RefreshToken: "invalid_refresh_token",
+				Token: "invalid_refresh_token",
 			}
 
-			service.On("Execute", mock.Anything, input).Return(nil, domain.InvalidCredentialsError).Once()
+			useCase.On("Execute", mock.Anything, input).Return(nil, domain.InvalidCredentialsError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
@@ -82,7 +82,7 @@ func TestRefreshTokenController(t *testing.T) {
 			require.Equal(t, domain.InvalidCredentialsError.Code, body.Code)
 			require.Equal(t, domain.InvalidCredentialsError.Message, body.Message)
 
-			service.AssertExpectations(t)
+			useCase.AssertExpectations(t)
 		})
 
 		validationTests := []struct {
@@ -94,7 +94,7 @@ func TestRefreshTokenController(t *testing.T) {
 				name:          "refresh token is missing",
 				expectedError: "(?i)required",
 				body: port.RefreshTokenInput{
-					RefreshToken: "",
+					Token: "",
 				},
 			},
 		}
@@ -107,7 +107,7 @@ func TestRefreshTokenController(t *testing.T) {
 				w := httptest.NewRecorder()
 
 				sut.Execute(w, r)
-				
+
 				require.Equal(t, http.StatusBadRequest, w.Code)
 				var body controller.ErrorResponse
 				require.NoError(t, controller.DecodeJSON(w.Body, &body))

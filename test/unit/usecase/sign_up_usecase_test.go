@@ -1,4 +1,4 @@
-package service_test
+package usecase_test
 
 import (
 	"context"
@@ -9,34 +9,20 @@ import (
 	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
-	"github.com/joao-vitor-felix/cinemax/internal/core/service"
+	"github.com/joao-vitor-felix/cinemax/internal/core/usecase"
 	m "github.com/joao-vitor-felix/cinemax/test/mock"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-type HasherMock struct {
-	mock.Mock
-}
-
-func (h *HasherMock) Hash(password string) (string, error) {
-	args := h.Called(password)
-	return args.String(0), args.Error(1)
-}
-
-func (h *HasherMock) Compare(hash *string, password string) error {
-	args := h.Called(hash, password)
-	return args.Error(0)
-}
-
-func setupSut() (port.SignUpService, *m.UserRepositoryMock, *HasherMock) {
+func setupSut() (port.SignUpUseCase, *m.UserRepositoryMock, *m.PasswordHasherMock) {
 	repoMock := new(m.UserRepositoryMock)
-	hasherMock := new(HasherMock)
-	sut := service.NewSignUpService(repoMock, hasherMock)
+	hasherMock := new(m.PasswordHasherMock)
+	sut := usecase.NewSignUpUseCase(repoMock, hasherMock)
 	return sut, repoMock, hasherMock
 }
 
-func TestSignUpService(t *testing.T) {
+func TestSignUpUseCase(t *testing.T) {
 	input := port.SignUpInput{
 		FirstName:   "John",
 		LastName:    "Doe",

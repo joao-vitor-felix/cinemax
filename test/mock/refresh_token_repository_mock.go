@@ -19,16 +19,16 @@ func (r *RefreshTokenRepositoryMock) GetByToken(ctx context.Context, token strin
 	return args.Get(0).(*domain.RefreshToken), args.Error(1)
 }
 
-func (r *RefreshTokenRepositoryMock) GenerateToken(ctx context.Context, userId string) (*domain.RefreshToken, error) {
-	args := r.Called(ctx, userId)
+func (r *RefreshTokenRepositoryMock) GenerateToken(ctx context.Context, userID string) (*domain.RefreshToken, error) {
+	args := r.Called(ctx, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*domain.RefreshToken), args.Error(1)
 }
 
-func (r *RefreshTokenRepositoryMock) GenerateAndInvalidateUsedToken(ctx context.Context, token, userId string) (*domain.RefreshToken, error) {
-	args := r.Called(ctx, token, userId)
+func (r *RefreshTokenRepositoryMock) GenerateAndInvalidateUsedToken(ctx context.Context, token, userID string) (*domain.RefreshToken, error) {
+	args := r.Called(ctx, token, userID)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -40,7 +40,7 @@ func (r *RefreshTokenRepositoryMock) DeleteToken(ctx context.Context, token stri
 	return args.Error(0)
 }
 
-func (r *RefreshTokenRepositoryMock) DeleteTokensByUserID(ctx context.Context, userId string) error {
-	args := r.Called(ctx, userId)
+func (r *RefreshTokenRepositoryMock) DeleteTokensByUserID(ctx context.Context, userID string) error {
+	args := r.Called(ctx, userID)
 	return args.Error(0)
 }

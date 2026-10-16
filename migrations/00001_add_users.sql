@@ -28,7 +28,7 @@ $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
 
 CREATE OR REPLACE TRIGGER set_updated_at_trigger
-AFTER UPDATE ON users
+BEFORE UPDATE ON users
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 

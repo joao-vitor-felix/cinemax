@@ -12,6 +12,6 @@ type SignInOutput struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-type SignInService interface {
+type SignInUseCase interface {
 	Execute(ctx context.Context, input SignInInput) (*SignInOutput, error)
 }

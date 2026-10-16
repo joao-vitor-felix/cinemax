@@ -68,7 +68,7 @@ func (r *PostgresUserRepository) IsContactInfoAvailable(ctx context.Context, ema
 	return !exists, nil
 }
 
-func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
+func (r *PostgresUserRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
 		SELECT
 			id,
@@ -110,7 +110,7 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) 
 	return &user, nil
 }
 
-func (r *PostgresUserRepository) FindByID(ctx context.Context, id string) (*domain.User, error) {
+func (r *PostgresUserRepository) GetByID(ctx context.Context, id string) (*domain.User, error) {
 	query := `
 		SELECT
 			id,
@@ -151,4 +151,14 @@ func (r *PostgresUserRepository) FindByID(ctx context.Context, id string) (*doma
 	}
 
 	return &user, nil
+}
+
+func (r *PostgresUserRepository) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
+	query := `
+		UPDATE users
+		SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $2
+	`
+	_, err := getExecutor(ctx, r.db).ExecContext(ctx, query, hashedPassword, userID)
+	return err
 }

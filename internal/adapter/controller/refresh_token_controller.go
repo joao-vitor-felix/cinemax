@@ -9,11 +9,11 @@ import (
 )
 
 type RefreshTokenController struct {
-	service port.RefreshTokenService
+	useCase port.RefreshTokenUseCase
 }
 
-func NewRefreshTokenController(service port.RefreshTokenService) *RefreshTokenController {
-	return &RefreshTokenController{service}
+func NewRefreshTokenController(useCase port.RefreshTokenUseCase) *RefreshTokenController {
+	return &RefreshTokenController{useCase}
 }
 
 // Execute godoc
@@ -29,7 +29,7 @@ func NewRefreshTokenController(service port.RefreshTokenService) *RefreshTokenCo
 // @Failure 404 {object} ErrorResponse "Not found (token or user not found)"
 // @Failure 401 {object} ErrorResponse "Unauthorized (invalid refresh token)"
 // @Failure 500 {object} ErrorResponse "Internal server error"
-// @Router /auth/refresh-token [post]
+// @Router /auth/refresh [post]
 func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request) {
 	var input port.RefreshTokenInput
 	if err := DecodeJSON(r.Body, &input); err != nil {
@@ -49,7 +49,7 @@ func (c *RefreshTokenController) Execute(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	output, err := c.service.Execute(r.Context(), input)
+	output, err := c.useCase.Execute(r.Context(), input)
 	if err != nil {
 		HandleError(w, err)
 		return

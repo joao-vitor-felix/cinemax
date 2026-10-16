@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -7,20 +7,20 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type SignInService struct {
+type SignInUseCase struct {
 	userRepo         port.UserRepository
 	passwordHasher   port.PasswordHasher
 	tokenIssuer      port.TokenIssuer
 	refreshTokenRepo port.RefreshTokenRepository
 }
 
-func NewSignInService(
+func NewSignInUseCase(
 	userRepo port.UserRepository,
 	passwordHasher port.PasswordHasher,
 	tokenIssuer port.TokenIssuer,
 	refreshTokenRepo port.RefreshTokenRepository,
-) port.SignInService {
-	return &SignInService{
+) *SignInUseCase {
+	return &SignInUseCase{
 		userRepo:         userRepo,
 		passwordHasher:   passwordHasher,
 		tokenIssuer:      tokenIssuer,
@@ -28,9 +28,8 @@ func NewSignInService(
 	}
 }
 
-func (s *SignInService) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
-
-	user, err := s.userRepo.FindByEmail(ctx, input.Email)
+func (u *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
+	user, err := u.userRepo.GetByEmail(ctx, input.Email)
 
 	if err != nil {
 		return nil, err
@@ -40,12 +39,16 @@ func (s *SignInService) Execute(ctx context.Context, input port.SignInInput) (*p
 		return nil, domain.InvalidCredentialsError
 	}
 
-	err = s.passwordHasher.Compare(user.PasswordHash, input.Password)
+	match, err := u.passwordHasher.Compare(user.PasswordHash, input.Password)
 	if err != nil {
+		return nil, err
+	}
+
+	if !match {
 		return nil, domain.InvalidCredentialsError
 	}
 
-	accessToken, err := s.tokenIssuer.Generate(port.AccessTokenPayload{
+	accessToken, err := u.tokenIssuer.Generate(port.AccessTokenPayload{
 		ID:    user.ID.String(),
 		Email: user.Email,
 	})
@@ -54,7 +57,7 @@ func (s *SignInService) Execute(ctx context.Context, input port.SignInInput) (*p
 		return nil, err
 	}
 
-	refreshToken, err := s.refreshTokenRepo.GenerateToken(ctx, user.ID.String())
+	refreshToken, err := u.refreshTokenRepo.GenerateToken(ctx, user.ID.String())
 	if err != nil {
 		return nil, err
 	}

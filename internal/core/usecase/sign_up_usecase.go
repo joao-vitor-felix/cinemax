@@ -1,4 +1,4 @@
-package service
+package usecase
 
 import (
 	"context"
@@ -7,19 +7,19 @@ import (
 	"github.com/joao-vitor-felix/cinemax/internal/core/port"
 )
 
-type SignUpService struct {
+type SignUpUseCase struct {
 	userRepo       port.UserRepository
 	passwordHasher port.PasswordHasher
 }
 
-func NewSignUpService(userRepo port.UserRepository, passwordHasher port.PasswordHasher) port.SignUpService {
-	return &SignUpService{
+func NewSignUpUseCase(userRepo port.UserRepository, passwordHasher port.PasswordHasher) *SignUpUseCase {
+	return &SignUpUseCase{
 		userRepo,
 		passwordHasher,
 	}
 }
 
-func (s *SignUpService) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
+func (u *SignUpUseCase) Execute(ctx context.Context, input port.SignUpInput) (*domain.User, error) {
 	user, err := domain.NewUser(
 		input.FirstName,
 		input.LastName,
@@ -31,19 +31,19 @@ func (s *SignUpService) Execute(ctx context.Context, input port.SignUpInput) (*d
 	if err != nil {
 		return nil, err
 	}
-	isAvailable, err := s.userRepo.IsContactInfoAvailable(ctx, user.Email, *user.Phone)
+	isAvailable, err := u.userRepo.IsContactInfoAvailable(ctx, user.Email, *user.Phone)
 	if err != nil {
 		return nil, err
 	}
 	if !isAvailable {
 		return nil, domain.ContactInfoUnavailableError
 	}
-	passwordHash, err := s.passwordHasher.Hash(input.Password)
+	passwordHash, err := u.passwordHasher.Hash(input.Password)
 	if err != nil {
 		return nil, err
 	}
 	user.PasswordHash = &passwordHash
-	createdUser, err := s.userRepo.Create(ctx, user)
+	createdUser, err := u.userRepo.Create(ctx, user)
 	if err != nil {
 		return nil, err
 	}

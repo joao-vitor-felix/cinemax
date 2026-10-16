@@ -14,27 +14,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type SignInService struct {
+type SignInUseCase struct {
 	mock.Mock
 }
 
-func (s *SignInService) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
+func (s *SignInUseCase) Execute(ctx context.Context, input port.SignInInput) (*port.SignInOutput, error) {
 	args := s.Called(ctx, input)
 	return args.Get(0).(*port.SignInOutput), args.Error(1)
 }
 
 func TestSignInController(t *testing.T) {
-	setupSut := func() (*controller.SignInController, *SignInService) {
-		serviceMock := new(SignInService)
-		sut := controller.NewSignInController(serviceMock)
-		return sut, serviceMock
+	setupSut := func() (*controller.SignInController, *SignInUseCase) {
+		useCaseMock := new(SignInUseCase)
+		sut := controller.NewSignInController(useCaseMock)
+		return sut, useCaseMock
 	}
 
 	url := "/auth/sign-in"
 
 	t.Run("Execute", func(t *testing.T) {
 		t.Run("should sign in and return 200 alongside the tokens", func(t *testing.T) {
-			sut, service := setupSut()
+			sut, useCase := setupSut()
 
 			input := port.SignInInput{
 				Email:    "john@john.com",
@@ -45,7 +45,7 @@ func TestSignInController(t *testing.T) {
 				RefreshToken: "refresh_token_123",
 			}
 
-			service.On("Execute", mock.Anything, input).Return(output, nil).Once()
+			useCase.On("Execute", mock.Anything, input).Return(output, nil).Once()
 
 			//TODO: make a helper function to make requests in controller tests
 			r := test.MakeRequest(http.MethodPost, url, input)
@@ -58,18 +58,18 @@ func TestSignInController(t *testing.T) {
 			require.NoError(t, controller.DecodeJSON(w.Body, &res))
 			require.Equal(t, *output, res)
 
-			service.AssertExpectations(t)
+			useCase.AssertExpectations(t)
 		})
 
 		t.Run("should return an error when service fails", func(t *testing.T) {
-			sut, service := setupSut()
+			sut, useCase := setupSut()
 
 			input := port.SignInInput{
 				Email:    "john@john.com",
 				Password: "12345678",
 			}
 
-			service.On("Execute", mock.Anything, input).Return(&port.SignInOutput{}, domain.InvalidCredentialsError).Once()
+			useCase.On("Execute", mock.Anything, input).Return(&port.SignInOutput{}, domain.InvalidCredentialsError).Once()
 
 			r := test.MakeRequest(http.MethodPost, url, input)
 			w := httptest.NewRecorder()
@@ -82,7 +82,7 @@ func TestSignInController(t *testing.T) {
 			require.Equal(t, domain.InvalidCredentialsError.Code, body.Code)
 			require.Equal(t, domain.InvalidCredentialsError.Message, body.Message)
 
-			service.AssertExpectations(t)
+			useCase.AssertExpectations(t)
 		})
 
 		validationTests :=

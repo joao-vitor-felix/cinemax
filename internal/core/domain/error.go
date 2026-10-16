@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 )
 
 // AppError represents an application error with HTTP status code
@@ -25,17 +27,18 @@ func NewAppError(code, message string, statusCode int) *AppError {
 	}
 }
 
-func ValidationError(error string) *AppError {
+func ValidationError(err string) *AppError {
 	return &AppError{
 		Code:       "VALIDATION_ERROR",
-		Message:    error,
+		Message:    err,
 		StatusCode: http.StatusBadRequest,
 	}
 }
 
 func NotFoundError(entity string) *AppError {
+	code := strings.ToUpper(fmt.Sprintf("%s_%s", entity, "not_found"))
 	return &AppError{
-		Code:       "NOT_FOUND",
+		Code:       code,
 		Message:    entity + " not found",
 		StatusCode: http.StatusNotFound,
 	}
@@ -85,5 +88,17 @@ var (
 		"EMAIL_NOT_VERIFIED",
 		"email is not verified with the provider",
 		http.StatusUnauthorized,
+	)
+
+	TokenAlreadyUsedError = NewAppError(
+		"TOKEN_USED",
+		"token has already been used",
+		http.StatusBadRequest,
+	)
+
+	TokenExpiredError = NewAppError(
+		"TOKEN_EXPIRED",
+		"token has expired",
+		http.StatusBadRequest,
 	)
 )
