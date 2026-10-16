@@ -19,16 +19,18 @@ func setupResetPasswordSut() (
 	port.ResetPasswordUseCase,
 	*m.PasswordResetRepositoryMock,
 	*m.UserRepositoryMock,
+	*m.RefreshTokenRepositoryMock,
 	*m.PasswordHasherMock,
 	*m.UnitOfWorkMock,
 ) {
 	passwordResetRepo := new(m.PasswordResetRepositoryMock)
 	userRepo := new(m.UserRepositoryMock)
+	refreshTokenRepo := new(m.RefreshTokenRepositoryMock)
 	passwordHasher := new(m.PasswordHasherMock)
 	uow := new(m.UnitOfWorkMock)
 
-	sut := usecase.NewResetPasswordUseCase(passwordResetRepo, userRepo, passwordHasher, uow)
-	return sut, passwordResetRepo, userRepo, passwordHasher, uow
+	sut := usecase.NewResetPasswordUseCase(passwordResetRepo, userRepo, refreshTokenRepo, passwordHasher, uow)
+	return sut, passwordResetRepo, userRepo, refreshTokenRepo, passwordHasher, uow
 }
 
 func TestResetPasswordUseCase(t *testing.T) {
@@ -39,7 +41,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 
 	t.Run("Execute", func(t *testing.T) {
 		t.Run("should reset password successfully", func(t *testing.T) {
-			sut, passwordResetRepo, userRepo, passwordHasher, uow := setupResetPasswordSut()
+			sut, passwordResetRepo, userRepo, refreshTokenRepo, passwordHasher, uow := setupResetPasswordSut()
 
 			userID := uuid.New().String()
 			expiresAt := time.Now().Add(10 * time.Minute)
@@ -55,18 +57,21 @@ func TestResetPasswordUseCase(t *testing.T) {
 			passwordHasher.On("Hash", input.NewPassword).Return(hashedPassword, nil).Once()
 			userRepo.On("UpdatePassword", mock.Anything, userID, hashedPassword).Return(nil).Once()
 			passwordResetRepo.On("MarkTokenAsUsed", mock.Anything, mock.AnythingOfType("string")).Return(nil).Once()
+			refreshTokenRepo.On("DeleteTokensByUserID", mock.Anything, userID).Return(nil).Once()
 			uow.On("Do", mock.Anything, mock.AnythingOfType("func(context.Context) error")).Return(nil).Once()
 
 			err := sut.Execute(context.Background(), input)
 
 			require.NoError(t, err)
 			passwordResetRepo.AssertExpectations(t)
+			userRepo.AssertExpectations(t)
+			refreshTokenRepo.AssertExpectations(t)
 			passwordHasher.AssertExpectations(t)
 			uow.AssertExpectations(t)
 		})
 
 		t.Run("should return NotFoundError when token does not exist", func(t *testing.T) {
-			sut, passwordResetRepo, _, _, _ := setupResetPasswordSut()
+			sut, passwordResetRepo, _, _, _, _ := setupResetPasswordSut()
 
 			passwordResetRepo.On("GetByToken", mock.Anything, mock.AnythingOfType("string")).Return(nil, nil).Once()
 
@@ -79,7 +84,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 		})
 
 		t.Run("should return TOKEN_USED error if token already used", func(t *testing.T) {
-			sut, passwordResetRepo, _, _, _ := setupResetPasswordSut()
+			sut, passwordResetRepo, _, _, _, _ := setupResetPasswordSut()
 
 			usedAt := time.Now().Add(-1 * time.Minute)
 			usedToken := &domain.PasswordResetToken{
@@ -101,7 +106,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 		})
 
 		t.Run("should return TOKEN_EXPIRED error if token is expired", func(t *testing.T) {
-			sut, passwordResetRepo, _, _, _ := setupResetPasswordSut()
+			sut, passwordResetRepo, _, _, _, _ := setupResetPasswordSut()
 
 			expiredToken := &domain.PasswordResetToken{
 				Token:     "hashed_token_value",
@@ -121,7 +126,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 		})
 
 		t.Run("should bubble up error when uow fails", func(t *testing.T) {
-			sut, passwordResetRepo, _, passwordHasher, uow := setupResetPasswordSut()
+			sut, passwordResetRepo, _, _, passwordHasher, uow := setupResetPasswordSut()
 
 			validToken := &domain.PasswordResetToken{
 				Token:     "hashed_token_value",

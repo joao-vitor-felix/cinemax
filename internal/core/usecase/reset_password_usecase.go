@@ -12,6 +12,7 @@ import (
 type ResetPasswordUseCase struct {
 	passwordResetRepo port.PasswordResetRepository
 	userRepo          port.UserRepository
+	refreshTokenRepo  port.RefreshTokenRepository
 	passwordHasher    port.PasswordHasher
 	uow               port.UnitOfWork
 }
@@ -19,12 +20,14 @@ type ResetPasswordUseCase struct {
 func NewResetPasswordUseCase(
 	passwordResetRepo port.PasswordResetRepository,
 	userRepo port.UserRepository,
+	refreshTokenRepo port.RefreshTokenRepository,
 	passwordHasher port.PasswordHasher,
 	uow port.UnitOfWork,
 ) *ResetPasswordUseCase {
 	return &ResetPasswordUseCase{
 		passwordResetRepo: passwordResetRepo,
 		userRepo:          userRepo,
+		refreshTokenRepo:  refreshTokenRepo,
 		passwordHasher:    passwordHasher,
 		uow:               uow,
 	}
@@ -61,7 +64,10 @@ func (u *ResetPasswordUseCase) Execute(ctx context.Context, input port.ResetPass
 			return err
 		}
 
-		// TODO: invalidate active sessions
+		// FIXME: remove refresh token deletion and invalidate active sessions instead once session management is introduced
+		if err := u.refreshTokenRepo.DeleteTokensByUserID(txCtx, resetToken.UserID); err != nil {
+			return err
+		}
 
 		return nil
 	})

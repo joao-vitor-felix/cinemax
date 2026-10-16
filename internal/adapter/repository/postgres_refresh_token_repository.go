@@ -170,8 +170,8 @@ func (r *PostgresRefreshTokenRepository) DeleteTokensByUserID(ctx context.Contex
 		DELETE FROM
 			refresh_tokens
 		WHERE
-			user_id = $1
+			user_id = $1 AND used_at IS NULL
 	`
-	_, err := r.db.ExecContext(ctx, query, userID)
+	_, err := getExecutor(ctx, r.db).ExecContext(ctx, query, userID)
 	return err
 }

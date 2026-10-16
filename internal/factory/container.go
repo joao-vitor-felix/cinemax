@@ -38,7 +38,7 @@ func NewContainer(db *sql.DB) *Container {
 	refreshTokenUseCase := usecase.NewRefreshTokenUseCase(refreshTokenRepo, userRepo, tokenIssuerAdapter)
 	signInGoogleUseCase := usecase.NewSignInGoogleUseCase(googleOAuthAdapter, userRepo, tokenIssuerAdapter, refreshTokenRepo)
 	forgotPasswordUseCase := usecase.NewPasswordResetUseCase(passwordResetRepo, userRepo)
-	resetPasswordUseCase := usecase.NewResetPasswordUseCase(passwordResetRepo, userRepo, passwordHasherAdapter, uow)
+	resetPasswordUseCase := usecase.NewResetPasswordUseCase(passwordResetRepo, userRepo, refreshTokenRepo, passwordHasherAdapter, uow)
 
 	return &Container{
 		SignUpController:           controller.NewSignUpController(signUpUseCase),
