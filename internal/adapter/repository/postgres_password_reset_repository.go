@@ -99,7 +99,7 @@ func (r *PostgresPasswordResetRepository) MarkTokenAsUsed(ctx context.Context, t
 	query := `
 		UPDATE password_reset_tokens
 		SET used_at = NOW()
-		WHERE token = $1
+		WHERE token = $1 AND used_at IS NULL
 	`
 	result, err := getExecutor(ctx, r.db).ExecContext(ctx, query, token)
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *PostgresPasswordResetRepository) MarkTokenAsUsed(ctx context.Context, t
 	}
 
 	if rowsAffected == 0 {
-		return sql.ErrNoRows
+		return domain.TokenAlreadyUsedError
 	}
 
 	return nil
