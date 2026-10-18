@@ -26,14 +26,14 @@ func OpenPool() *sql.DB {
 func RunMigrations(db *sql.DB) error {
 	goose.SetBaseFS(m.MigrationFS)
 	if err := goose.SetDialect("postgres"); err != nil {
-		panic(err)
+		return err
 	}
 	tableName := os.Getenv("GOOSE_TABLE")
 	if tableName != "" {
 		goose.SetTableName(tableName)
 	}
 	if err := goose.Up(db, "."); err != nil {
-		panic(err)
+		return err
 	}
 	slog.Info("Migrations applied")
 	return nil
