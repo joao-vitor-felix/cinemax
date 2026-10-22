@@ -34,7 +34,7 @@ import (
 // @name						Authorization
 // @description				Type "Bearer" followed by a space and JWT token.
 func main() {
-	if os.Getenv("APP_ENV") != "production" {
+	if os.Getenv("APP_ENV") == "development" {
 		if err := godotenv.Load(); err != nil {
 			log.Fatal("Error loading .env file: ", err)
 		}
