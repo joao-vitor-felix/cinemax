@@ -1,0 +1,43 @@
+name: Continuous Deployment
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        run: |
+          docker build \
+            -t ${{ steps.ecr.outputs.registry }}/cinemax:latest \
+            -t ${{ steps.ecr.outputs.registry }}/cinemax:${{ github.sha }} .
+          docker push ${{ steps.ecr.outputs.registry }}/cinemax:latest
+          docker push ${{ steps.ecr.outputs.registry }}/cinemax:${{ github.sha }}
+
+      # - name: Update ECS service
+      #   run: |
+      #     aws ecs update-service --cluster cinemax-cluster --service cinemax-service --force-new-deployment
+      #     aws ecs wait services-stable --cluster cinemax-cluster --services cinemax-service
