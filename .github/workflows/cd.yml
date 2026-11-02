@@ -13,6 +13,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  migrate:
+    runs-on: [self-hosted, linux, x64]
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          sparse-checkout: |
+            migrations
+
+      - name: Run Goose migrations
+        env:
+          GOOSE_DRIVER: postgres
+          GOOSE_TABLE: goose_migrations
+          GOOSE_MIGRATION_DIR: migrations
+          GOOSE_DBSTRING: ${{ secrets.GOOSE_DBSTRING }}
+        run: |
+          goose up
+
+      - name: Wipe workspace leftovers from EC2 disk
+        if: always()
+        run: |
+          find "${{ github.workspace }}" -mindepth 1 -delete
+
   deploy:
     runs-on: ubuntu-latest
     environment: production
