@@ -78,5 +78,8 @@ jobs:
 
       - name: Update ECS service
         run: |
-          aws ecs update-service --cluster cinemax --service cinemax-service --force-new-deployment
-          aws ecs wait services-stable --cluster cinemax --services cinemax-service
+          echo "Triggering new ECS deployment..."
+          aws ecs update-service --cluster cinemax --service cinemax-service --force-new-deployment > /dev/null
+          echo "Waiting for service to stabilize..."
+          aws ecs wait services-stable --cluster cinemax --services cinemax-service > /dev/null
+          echo "Service is stable."
