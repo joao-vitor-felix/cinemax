@@ -65,7 +65,7 @@ jobs:
           docker push ${{ steps.ecr.outputs.registry }}/cinemax:latest
           docker push ${{ steps.ecr.outputs.registry }}/cinemax:${{ github.sha }}
 
-      # - name: Update ECS service
-      #   run: |
-      #     aws ecs update-service --cluster cinemax-cluster --service cinemax-service --force-new-deployment
-      #     aws ecs wait services-stable --cluster cinemax-cluster --services cinemax-service
+      - name: Update ECS service
+        run: |
+          aws ecs update-service --cluster cinemax --service cinemax-service --force-new-deployment
+          aws ecs wait services-stable --cluster cinemax --services cinemax-service

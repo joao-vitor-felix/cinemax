@@ -41,9 +41,7 @@ func main() {
 	}
 	var port int
 	var migrate bool
-	var migrateOnly bool
 	flag.BoolVar(&migrate, "migrate", false, "run database migrations")
-	flag.BoolVar(&migrateOnly, "migrate-only", false, "run database migrations and exit")
 	flag.IntVar(&port, "port", 8080, "server port")
 	flag.Parse()
 	db := database.OpenPool()
@@ -54,15 +52,13 @@ func main() {
 		}
 	}()
 
-	if migrate || migrateOnly {
+	if migrate && os.Getenv("APP_ENV") == "development" {
 		err := database.RunMigrations(db)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if migrateOnly {
-			return
-		}
 	}
+
 	container := factory.NewContainer(db)
 	r := httpPkg.SetupRoutes(container)
 	srv := &http.Server{
