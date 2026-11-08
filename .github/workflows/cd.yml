@@ -57,7 +57,18 @@ jobs:
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Check if image exists in ECR
+        id: check-image
+        run: |
+          if aws ecr describe-images --repository-name cinemax --image-ids imageTag=${{ github.sha }} > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Image tag ${{ github.sha }} already exists in ECR. Skipping build and push."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push
+        if: steps.check-image.outputs.exists != 'true'
         run: |
           docker build \
             -t ${{ steps.ecr.outputs.registry }}/cinemax:latest \
