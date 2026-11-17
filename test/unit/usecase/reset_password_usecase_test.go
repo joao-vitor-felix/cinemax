@@ -43,7 +43,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 		t.Run("should reset password successfully", func(t *testing.T) {
 			sut, passwordResetRepo, userRepo, refreshTokenRepo, passwordHasher, uow := setupResetPasswordSut()
 
-			userID := uuid.New().String()
+			userID := uuid.Must(uuid.NewV7()).String()
 			expiresAt := time.Now().Add(10 * time.Minute)
 			validToken := &domain.PasswordResetToken{
 				Token:     "hashed_token_value",
@@ -89,7 +89,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 			usedAt := time.Now().Add(-1 * time.Minute)
 			usedToken := &domain.PasswordResetToken{
 				Token:     "hashed_token_value",
-				UserID:    uuid.New().String(),
+				UserID:    uuid.Must(uuid.NewV7()).String(),
 				ExpiresAt: time.Now().Add(10 * time.Minute),
 				UsedAt:    &usedAt,
 			}
@@ -110,7 +110,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 
 			expiredToken := &domain.PasswordResetToken{
 				Token:     "hashed_token_value",
-				UserID:    uuid.New().String(),
+				UserID:    uuid.Must(uuid.NewV7()).String(),
 				ExpiresAt: time.Now().Add(-10 * time.Minute),
 			}
 
@@ -130,7 +130,7 @@ func TestResetPasswordUseCase(t *testing.T) {
 
 			validToken := &domain.PasswordResetToken{
 				Token:     "hashed_token_value",
-				UserID:    uuid.New().String(),
+				UserID:    uuid.Must(uuid.NewV7()).String(),
 				ExpiresAt: time.Now().Add(10 * time.Minute),
 			}
 			hashedPassword := "hashed_new_password"

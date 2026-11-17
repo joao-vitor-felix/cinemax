@@ -62,8 +62,12 @@ func (u *User) IsAgeValid(targetAge int) bool {
 }
 
 func NewUser(firstName, lastName, email, phone, dateOfBirth string, gender Gender) (*User, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
 	user := &User{
-		ID:          uuid.New(),
+		ID:          id,
 		FirstName:   firstName,
 		LastName:    lastName,
 		Email:       email,

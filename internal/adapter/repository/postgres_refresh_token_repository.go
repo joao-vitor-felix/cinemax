@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 )
 
@@ -54,18 +53,16 @@ func (r *PostgresRefreshTokenRepository) GetByToken(ctx context.Context, token s
 }
 
 func (r *PostgresRefreshTokenRepository) GenerateToken(ctx context.Context, userID string) (*domain.RefreshToken, error) {
-	tokenUUID := uuid.New().String()
 	expiresAt := time.Now().Add(tokenExpiration)
 
 	query := `
 		INSERT INTO
 			refresh_tokens (
-			token,
 			user_id,
 			expires_at,
 			created_at
 		)
-		VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+		VALUES ($1, $2, CURRENT_TIMESTAMP)
 		RETURNING
 			token,
 			user_id,
@@ -74,7 +71,7 @@ func (r *PostgresRefreshTokenRepository) GenerateToken(ctx context.Context, user
 			created_at
 	`
 	var t domain.RefreshToken
-	err := r.db.QueryRowContext(ctx, query, tokenUUID, userID, expiresAt).Scan(
+	err := r.db.QueryRowContext(ctx, query, userID, expiresAt).Scan(
 		&t.Token,
 		&t.UserID,
 		&t.ExpiresAt,
@@ -115,18 +112,16 @@ func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(ctx cont
 		return nil, err
 	}
 
-	newTokenUUID := uuid.New().String()
 	expiresAt := time.Now().Add(tokenExpiration)
 
 	insertQuery := `
 		INSERT INTO
 			refresh_tokens (
-			token,
 			user_id,
 			expires_at,
 			created_at
 		)
-		VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+		VALUES ($1, $2, CURRENT_TIMESTAMP)
 		RETURNING
 			token,
 			user_id,
@@ -135,7 +130,7 @@ func (r *PostgresRefreshTokenRepository) GenerateAndInvalidateUsedToken(ctx cont
 			created_at
 	`
 	var newToken domain.RefreshToken
-	err = tx.QueryRowContext(ctx, insertQuery, newTokenUUID, userID, expiresAt).Scan(
+	err = tx.QueryRowContext(ctx, insertQuery, userID, expiresAt).Scan(
 		&newToken.Token,
 		&newToken.UserID,
 		&newToken.ExpiresAt,
