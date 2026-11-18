@@ -37,7 +37,7 @@ func TestSignInUseCase(t *testing.T) {
 		Password: "password123",
 	}
 
-	userID := uuid.New()
+	userID := uuid.Must(uuid.NewV7())
 	passwordHash := "hashed_password"
 	mockUser := &domain.User{
 		ID:           userID,

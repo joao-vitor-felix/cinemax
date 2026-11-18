@@ -3,6 +3,7 @@ package unit
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/joao-vitor-felix/cinemax/internal/core/domain"
 	"github.com/stretchr/testify/require"
 )
@@ -26,6 +27,7 @@ func TestUserEntity(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, user)
+		require.Equal(t, uuid.Version(7), user.ID.Version())
 		require.Equal(t, firstName, user.FirstName)
 		require.Equal(t, lastName, user.LastName)
 		require.Equal(t, email, user.Email)

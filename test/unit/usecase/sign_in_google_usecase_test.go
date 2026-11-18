@@ -43,7 +43,7 @@ func TestSignInGoogleUseCase(t *testing.T) {
 
 			appAccessToken := "app_access_token"
 			expectedRefreshToken := "app_refresh_token"
-			createdUserID := uuid.New()
+			createdUserID := uuid.Must(uuid.NewV7())
 
 			oauthService.On("GetAccessToken", code).Return(accessToken, nil).Once()
 			oauthService.On("GetUserInfo", accessToken).Return(&port.UserInfo{
@@ -78,7 +78,7 @@ func TestSignInGoogleUseCase(t *testing.T) {
 		t.Run("should sign in an existing linked user successfully", func(t *testing.T) {
 			sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo := setupSignInGoogleSut()
 
-			userID := uuid.New()
+			userID := uuid.Must(uuid.NewV7())
 			appAccessToken := "app_access_token"
 			expectedRefreshToken := "app_refresh_token"
 
@@ -111,7 +111,7 @@ func TestSignInGoogleUseCase(t *testing.T) {
 		t.Run("should sign in an existing unlinked user successfully", func(t *testing.T) {
 			sut, oauthService, userRepo, tokenIssuer, refreshTokenRepo := setupSignInGoogleSut()
 
-			userID := uuid.New()
+			userID := uuid.Must(uuid.NewV7())
 			appAccessToken := "app_access_token"
 			expectedRefreshToken := "app_refresh_token"
 

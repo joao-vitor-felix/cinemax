@@ -33,7 +33,7 @@ func TestRefreshTokenUseCase(t *testing.T) {
 		Token: "old_refresh_token",
 	}
 
-	userID := uuid.New()
+	userID := uuid.Must(uuid.NewV7())
 	mockUser := &domain.User{
 		ID:    userID,
 		Email: "john@example.com",

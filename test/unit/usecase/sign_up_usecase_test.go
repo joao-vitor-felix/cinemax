@@ -50,7 +50,7 @@ func TestSignUpUseCase(t *testing.T) {
 				require.Equal(t, input.Gender, arg.Gender)
 				require.Equal(t, expectedHash, *arg.PasswordHash)
 			}).Return(&domain.User{
-				ID:              uuid.New(),
+				ID:              uuid.Must(uuid.NewV7()),
 				FirstName:       input.FirstName,
 				LastName:        input.LastName,
 				Email:           input.Email,

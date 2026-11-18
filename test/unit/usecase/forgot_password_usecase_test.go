@@ -30,7 +30,7 @@ func TestForgotPasswordUseCase(t *testing.T) {
 		t.Run("should successfully execute and generate a token", func(t *testing.T) {
 			sut, passwordResetRepo, userRepo := setupSut()
 
-			userID := uuid.New()
+			userID := uuid.Must(uuid.NewV7())
 			user := &domain.User{
 				ID:    userID,
 				Email: input.Email,
@@ -74,7 +74,7 @@ func TestForgotPasswordUseCase(t *testing.T) {
 		t.Run("should return error when SaveToken fails", func(t *testing.T) {
 			sut, passwordResetRepo, userRepo := setupSut()
 
-			userID := uuid.New()
+			userID := uuid.Must(uuid.NewV7())
 			user := &domain.User{
 				ID:    userID,
 				Email: input.Email,
